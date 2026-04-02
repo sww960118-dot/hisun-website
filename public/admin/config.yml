@@ -1,0 +1,77 @@
+# Decap CMS（原 Netlify CMS）— 在浏览器中编辑新闻与案例，保存后提交到 Git，由 Netlify/Vercel 等自动构建网站。
+#
+# 使用前请修改：
+# 1) backend.repo → 你的 GitHub 用户名/仓库名
+# 2) backend.branch → 默认分支（多为 main）
+#
+# 本地预览：在项目根目录执行 npx decap-server（需先安装 Node），再打开 /admin
+#
+backend:
+  name: github
+  repo: your-github-user/your-repo-name
+  branch: main
+
+# 仅本地连接仓库调试时取消下一行注释，并运行 npx decap-server
+# local_backend: true
+
+media_folder: public/uploads/cms
+public_folder: /uploads/cms
+
+locale: zh_Hans
+
+collections:
+  - name: news
+    label: 新闻动态
+    format: json
+    file: public/data/news.json
+    create: false
+    fields:
+      - label: 新闻列表
+        name: items
+        widget: list
+        summary: "{{fields.title}}"
+        fields:
+          - { label: 唯一 ID（勿重复）, name: id, widget: string }
+          - label: 分类
+            name: category
+            widget: select
+            options:
+              - { label: 高阳头条, value: headline }
+              - { label: 通知公告, value: notice }
+              - { label: 员工专区, value: staff }
+          - { label: 发布日期, name: date, widget: datetime, date_format: YYYY-MM-DD, time_format: false, picker_utc: false }
+          - { label: 阅读数, name: views, widget: number, value_type: int, default: 0, required: false }
+          - { label: 标题, name: title, widget: string }
+          - { label: 摘要（列表与详情导语）, name: desc, widget: text }
+          - { label: 封面图 URL, name: image, widget: string, hint: 可填外链图床地址，或用上方「媒体」上传后复制路径 }
+          - { label: 文章出处, name: source, widget: string, required: false, default: "高阳金信官网" }
+          - { label: 责任编辑, name: editor, widget: string, required: false, default: "编辑部" }
+          - label: 正文段落（可选，多条会依次显示在详情页）
+            name: content
+            widget: list
+            required: false
+            field: { label: 段落, widget: text }
+
+  - name: partner_cases
+    label: 合作伙伴 · 典型案例
+    format: json
+    file: public/data/partner-cases.json
+    create: false
+    fields:
+      - label: 案例列表
+        name: items
+        widget: list
+        summary: "{{fields.title}}"
+        fields:
+          - { label: 唯一 ID, name: id, widget: string }
+          - { label: 标题, name: title, widget: string }
+          - { label: 摘要, name: summary, widget: text }
+          - { label: 来源, name: source, widget: string, default: "典型案例" }
+          - { label: 编辑, name: editor, widget: string, default: "高阳金信编辑部" }
+          - { label: 阅读数, name: views, widget: number, value_type: int, default: 0 }
+          - { label: 发布日期, name: publishDate, widget: datetime, date_format: YYYY-MM-DD, time_format: false, picker_utc: false }
+          - { label: 配图 URL, name: image, widget: string }
+          - label: 正文段落
+            name: content
+            widget: list
+            field: { label: 段落, widget: text }

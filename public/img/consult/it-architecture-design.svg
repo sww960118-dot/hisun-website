@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="IT architecture design illustration">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1A2A6C"/>
+      <stop offset="100%" stop-color="#263F9B"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF3FF"/>
+      <stop offset="100%" stop-color="#C7DBFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg4)"/>
+  <rect x="130" y="120" width="1340" height="660" rx="36" fill="#FFFFFF12" stroke="#FFFFFF35" stroke-width="4"/>
+  <rect x="220" y="220" width="820" height="460" rx="26" fill="url(#panel)"/>
+  <rect x="280" y="300" width="220" height="18" rx="9" fill="#5C79D5"/>
+  <rect x="280" y="346" width="520" height="14" rx="7" fill="#89A2E8"/>
+  <rect x="280" y="386" width="420" height="14" rx="7" fill="#89A2E8"/>
+  <rect x="280" y="426" width="560" height="14" rx="7" fill="#89A2E8"/>
+  <rect x="280" y="474" width="180" height="110" rx="14" fill="#C9D8FF"/>
+  <rect x="490" y="474" width="180" height="110" rx="14" fill="#C9D8FF"/>
+  <rect x="700" y="474" width="180" height="110" rx="14" fill="#C9D8FF"/>
+  <rect x="1110" y="280" width="250" height="420" rx="24" fill="#FFFFFF2A"/>
+  <circle cx="1235" cy="375" r="70" fill="#83FFD9"/>
+  <path d="M1235 330L1256 360L1290 365L1266 390L1272 424L1235 407L1198 424L1204 390L1180 365L1214 360Z" fill="#2D7A63"/>
+  <text x="220" y="805" fill="#FFFFFF" fill-opacity=".9" font-size="42" font-family="Segoe UI, Arial, sans-serif">IT Architecture Design</text>
+</svg>

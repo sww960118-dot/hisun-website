@@ -1,0 +1,410 @@
+:root {
+  --hs-primary: #3d59ff;
+  --hs-primary-rgb: 61, 89, 255;
+  --hs-secondary: #35227b;
+  --hs-secondary-rgb: 53, 34, 123;
+  --hs-ink: #1a1a1a;
+  --hs-muted: #666666;
+  --hs-card-radius: 1rem;
+  --hs-card-radius-lg: 1.5rem;
+  --hs-font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+
+  /* 全站排版：正文统一 14px，行高、字距一致 */
+  --hs-fs-body: 14px;
+  --hs-fs-card-title: 15px;
+  --hs-fs-kicker: 12px;
+  --hs-fs-stat-value: 30px;
+  --hs-fs-btn-ghost: 11px;
+  --hs-fs-fab: 10px;
+
+  --hs-leading-body: 1.7143; /* 24/14，多行正文 */
+  --hs-leading-snug: 1.4286; /* 20/14，标题下说明、数据条 */
+  --hs-leading-tight: 1.25;
+  --hs-leading-none: 1;
+
+  --hs-tracking-body: 0.02em;
+  --hs-tracking-tight: -0.025em;
+  --hs-tracking-wide: 0.08em;
+
+  /* 与页面现有大标题档位对齐（Banner / 区块标题） */
+  --hs-fs-h1: clamp(1.875rem, 1.5rem + 1.25vw, 3rem);
+  --hs-fs-h2: 1.875rem;
+  --hs-fs-h3: 1.25rem;
+  --hs-fs-subtitle: var(--hs-fs-body);
+
+  --hs-fs-meta: 14px;
+  --hs-fs-caption: 12px;
+  --hs-btn-h-sm: 32px;
+  --hs-btn-h-md: 40px;
+  --hs-btn-h-lg: 48px;
+
+  /** 胶囊文案按钮（查看更多 / 查看详情 / 更多客户 / 了解更多）：水平内边距，宽度随文案 */
+  --hs-cta-pad-x: 16px;
+  /** 主题蓝铺色动画时长（与 hisun.css .hs-more-cta::before 一致） */
+  --hs-cta-fill-duration: 0.32s;
+}
+
+.hs-font-brand {
+  font-family: var(--hs-font-family);
+}
+
+/** 区块标题下短装饰线：白/浅底用主题蓝；深色或 Banner 等用 --inverse 白线 */
+.hs-heading-rule {
+  display: block;
+  width: 3rem;
+  height: 2px;
+  border-radius: 9999px;
+  background-color: var(--hs-primary);
+}
+.hs-heading-rule--inverse {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+/* —— 语义化排版（首页 / 走进高阳 / 公共组件复用） —— */
+
+.hs-text-body {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-body);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 400;
+}
+.hs-text-body-justify {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-body);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 400;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+/** 副标题 / 导语：与正文同字号，略紧行高、字重 500 */
+.hs-text-lead {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 500;
+}
+/** 卡片内小标题（业务卡、新闻列表标题） */
+.hs-text-card-title {
+  font-size: var(--hs-fs-card-title);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 700;
+}
+/** Banner 主文案（深色底） */
+.hs-text-banner-desc {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-body);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 400;
+}
+/** 角标 / 标签条 */
+.hs-text-kicker {
+  font-size: var(--hs-fs-kicker);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-wide);
+  font-weight: 700;
+}
+/** 英文全大写副标题 */
+.hs-text-overline {
+  font-size: var(--hs-fs-kicker);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-wide);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+/** 数据条上行说明 */
+.hs-text-stat-label {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 600;
+}
+/** 数据条大数字 */
+.hs-text-stat-value {
+  font-size: var(--hs-fs-stat-value);
+  line-height: var(--hs-leading-tight);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 700;
+}
+/** 页脚、侧栏链接与说明 */
+.hs-text-footer {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-body);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 400;
+}
+.hs-text-footer-heading {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 700;
+}
+/** 顶栏主导航、移动侧栏入口 */
+.hs-text-nav {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 600;
+}
+/** 主按钮、Banner CTA、页脚「邮件咨询」等 */
+.hs-text-button {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 700;
+}
+/** 业务卡「查看详情」等 11px 线框按钮 */
+.hs-text-btn-ghost {
+  font-size: var(--hs-fs-btn-ghost);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 700;
+}
+/** 右侧 FAB 窄条文案（空间受限仍用 token） */
+.hs-text-fab {
+  font-size: var(--hs-fs-fab);
+  line-height: var(--hs-leading-tight);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 700;
+}
+/** 区块主标题（「主营业务」「新闻动态」等） */
+.hs-text-page-h2 {
+  font-size: var(--hs-fs-h2);
+  line-height: var(--hs-leading-tight);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 800;
+}
+/** 分栏小标题（服务范围 / 团队等） */
+.hs-text-page-h3 {
+  font-size: var(--hs-fs-h3);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 700;
+}
+/** 内页二级标题：移动端 24px，sm+ 与区块主标题同档 */
+.hs-text-block-h2 {
+  font-size: 1.5rem;
+  line-height: var(--hs-leading-tight);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 700;
+}
+@media (min-width: 640px) {
+  .hs-text-block-h2 {
+    font-size: var(--hs-fs-h2);
+    font-weight: 800;
+  }
+}
+/** 荣誉卡片名称等半粗体一行标题 */
+.hs-text-emphasis-sm {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 600;
+}
+
+/* 兼容旧类名，映射到新规范 */
+.hs-type-h1 {
+  font-size: var(--hs-fs-h1);
+  line-height: var(--hs-leading-tight);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 800;
+}
+.hs-type-h2 {
+  font-size: var(--hs-fs-h2);
+  line-height: var(--hs-leading-tight);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 700;
+}
+.hs-type-h3 {
+  font-size: var(--hs-fs-h3);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-tight);
+  font-weight: 700;
+}
+.hs-type-subtitle {
+  font-size: var(--hs-fs-subtitle);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 500;
+}
+.hs-type-body {
+  font-size: var(--hs-fs-body);
+  line-height: var(--hs-leading-body);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 400;
+}
+.hs-type-meta {
+  font-size: var(--hs-fs-meta);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 600;
+}
+.hs-type-caption {
+  font-size: var(--hs-fs-caption);
+  line-height: var(--hs-leading-snug);
+  letter-spacing: var(--hs-tracking-body);
+  font-weight: 500;
+}
+
+.hs-glass-surface {
+  backdrop-filter: blur(14px) saturate(165%);
+  -webkit-backdrop-filter: blur(14px) saturate(165%);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow: 0 10px 30px rgba(var(--hs-primary-rgb), 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.dark .hs-glass-surface {
+  background: linear-gradient(155deg, rgba(36, 40, 54, 0.92) 0%, rgba(22, 24, 32, 0.82) 100%);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hs-liquid-hover {
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, backdrop-filter 0.25s ease;
+}
+
+/* 悬停时保持较高不透明度，避免深色底透出导致正文对比度不足 */
+.hs-liquid-hover:hover {
+  backdrop-filter: blur(18px) saturate(190%);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.96) 0%, rgba(245, 248, 255, 0.94) 100%);
+  border-color: rgba(var(--hs-primary-rgb), 0.5) !important;
+  box-shadow: 0 12px 32px rgba(var(--hs-primary-rgb), 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.dark .hs-liquid-hover:hover {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.2) 0%, rgba(199, 210, 254, 0.28) 100%);
+  border-color: rgba(199, 210, 254, 0.55) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.hs-interactive {
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.hs-is-selected {
+  border-color: rgba(var(--hs-primary-rgb), 0.65) !important;
+  box-shadow: 0 0 0 2px rgba(var(--hs-primary-rgb), 0.2), 0 10px 28px rgba(var(--hs-primary-rgb), 0.18) !important;
+}
+
+.dark .hs-is-selected {
+  border-color: rgba(140, 160, 255, 0.75) !important;
+  box-shadow: 0 0 0 2px rgba(140, 160, 255, 0.22), 0 10px 28px rgba(0, 0, 0, 0.38) !important;
+}
+
+.hs-is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(0.12);
+}
+
+.hs-image-frame {
+  border-radius: var(--hs-card-radius);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 8px 24px rgba(var(--hs-primary-rgb), 0.12);
+}
+
+.hs-image-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.hs-image-frame:hover img {
+  transform: scale(1.04);
+}
+
+/* 走进高阳 · 企业文化小卡：玻璃渐变会盖住 background-color，悬停需清除渐变 */
+.about-culture-card {
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.about-culture-card:hover,
+.about-culture-card:focus-visible {
+  background: #3d59ff !important;
+  background-image: none !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 12px 32px rgba(61, 89, 255, 0.3) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.dark .about-culture-card:hover,
+.dark .about-culture-card:focus-visible {
+  background: #3d59ff !important;
+  background-image: none !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 12px 32px rgba(61, 89, 255, 0.35) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.about-culture-card:hover .about-culture-card__char {
+  color: #ffffff !important;
+}
+
+.about-culture-card:hover .about-culture-card__diamond {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: #ffffff !important;
+}
+
+.about-culture-card:hover .about-culture-card__desc {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+@keyframes cultureBgShift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) scale(1.02);
+    opacity: 0.82;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.75;
+  }
+}
+
+@keyframes cultureCardFloat {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* 企业文化（图2）：持续动效（背景呼吸 + 卡片轻微浮动） */
+.about-culture-bg-anim {
+  will-change: transform, opacity;
+  animation: cultureBgShift 8s ease-in-out infinite;
+}
+
+.about-culture-card--float {
+  will-change: transform;
+  animation-name: cultureCardFloat;
+  animation-duration: var(--culture-float-duration, 5800ms);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-delay: var(--culture-float-delay, 0ms);
+}
+
+.about-culture-card--float:hover,
+.about-culture-card--float:focus-visible {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-culture-bg-anim,
+  .about-culture-card--float {
+    animation: none !important;
+  }
+}

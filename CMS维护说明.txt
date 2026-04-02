@@ -1,0 +1,55 @@
+高阳金信官网 — 新闻与案例维护说明（单人、无自建服务器版）
+============================================================
+
+一、当前逻辑（已实现）
+----------------------
+1. 网站启动时会请求：
+   - /data/news.json
+   - /data/partner-cases.json
+2. 文件格式固定为：{ "items": [ ... ] }
+3. 若 items 为空数组或文件打不开：新闻、案例仍使用代码里的演示数据。
+4. 一旦你在 JSON 里放入至少一条新闻（或案例），网站将只显示 JSON 里的列表（等于整表替换），请一次性维护完整列表。
+
+二、你不写代码时的两种做法
+--------------------------
+【做法 A】用「后台网页」编辑（推荐，需 GitHub + 自动部署）
+1. 把本项目放到 GitHub 仓库。
+2. 用 Netlify（或同类）连接该仓库，自动构建并发布（构建命令一般为 npm run build，发布目录 dist）。
+3. 打开 public/admin/config.yml，把 backend.repo、backend.branch 改成你的仓库。
+4. 按 Decap 文档在 GitHub 安装 OAuth App，在 Netlify 填 Client ID/Secret（或改用 Git Gateway）。
+5. 浏览器打开：你的域名/admin ，登录后即可用表单编辑新闻与案例；保存 = 向 GitHub 提交，几分钟后网站自动更新。
+
+【做法 B】直接改文件（适合偶尔改一条）
+1. 用记事本 / VS Code 打开 public/data/news.json 或 partner-cases.json。
+2. 严格保持 JSON 格式（引号、逗号），可对照仓库里 src/cms/news.defaults.js 与 partnersPage.js 里的字段。
+3. 保存后重新执行 npm run build 并上传 dist；若用 Netlify 连接 Git，则提交代码后自动构建。
+
+三、新闻每条字段（对应新闻列表与详情）
+--------------------------------------
+id          字符串，唯一，勿重复
+category    headline | notice | staff（与前台筛选一致）
+date        YYYY-MM-DD
+views       数字，可选
+title       标题
+desc        摘要（列表与详情导语）
+image       封面图完整 URL（可用图床链接）
+source      可选，默认高阳金信官网
+editor      可选，默认编辑部
+content     可选，字符串数组，详情页正文多段
+
+四、案例每条字段（合作伙伴页典型案例）
+--------------------------------------
+id  title  summary  source  editor  views  publishDate  image  content（段落数组）
+
+五、图片上传
+------------
+若使用 Decap 的「媒体库」，图片会进 public/uploads/cms，构建后会出现在 /uploads/cms/...
+也可直接在字段里粘贴外链图片地址。
+
+六、本地试用 Decap（可选）
+-------------------------
+安装 Node 后，在项目根目录：
+  npx decap-server
+再在 public/admin/config.yml 里打开 local_backend: true ，浏览器访问 http://localhost:5173/admin（需同时 npm run dev）。
+
+如有问题，把报错截图或 JSON 校验错误信息发给能协助你操作电脑的朋友即可。

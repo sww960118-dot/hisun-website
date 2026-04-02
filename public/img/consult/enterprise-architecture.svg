@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Enterprise architecture consulting illustration">
+  <defs>
+    <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#263B8F"/>
+      <stop offset="100%" stop-color="#4F67D3"/>
+    </linearGradient>
+    <linearGradient id="line1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#72D6FF"/>
+      <stop offset="100%" stop-color="#E4EEFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg1)"/>
+  <rect x="140" y="120" width="1320" height="660" rx="36" fill="#FFFFFF12" stroke="#FFFFFF35" stroke-width="4"/>
+  <rect x="220" y="220" width="280" height="140" rx="18" fill="#FFFFFF" fill-opacity=".18"/>
+  <rect x="660" y="220" width="280" height="140" rx="18" fill="#FFFFFF" fill-opacity=".18"/>
+  <rect x="1100" y="220" width="280" height="140" rx="18" fill="#FFFFFF" fill-opacity=".18"/>
+  <rect x="440" y="520" width="280" height="140" rx="18" fill="#FFFFFF" fill-opacity=".18"/>
+  <rect x="880" y="520" width="280" height="140" rx="18" fill="#FFFFFF" fill-opacity=".18"/>
+  <path d="M500 290H660M940 290H1100M800 360V520M580 520H880" stroke="url(#line1)" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="500" cy="290" r="14" fill="#D8EEFF"/>
+  <circle cx="660" cy="290" r="14" fill="#D8EEFF"/>
+  <circle cx="940" cy="290" r="14" fill="#D8EEFF"/>
+  <circle cx="1100" cy="290" r="14" fill="#D8EEFF"/>
+  <circle cx="800" cy="520" r="14" fill="#D8EEFF"/>
+  <text x="220" y="805" fill="#FFFFFF" fill-opacity=".88" font-size="42" font-family="Segoe UI, Arial, sans-serif">Enterprise Architecture</text>
+</svg>

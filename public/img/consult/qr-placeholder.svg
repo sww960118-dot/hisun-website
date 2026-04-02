@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="QR placeholder">
+  <rect width="320" height="320" fill="#fff"/>
+  <rect x="20" y="20" width="280" height="280" fill="#fff" stroke="#111827" stroke-width="8"/>
+  <rect x="40" y="40" width="80" height="80" fill="#111827"/>
+  <rect x="52" y="52" width="56" height="56" fill="#fff"/>
+  <rect x="64" y="64" width="32" height="32" fill="#111827"/>
+  <rect x="200" y="40" width="80" height="80" fill="#111827"/>
+  <rect x="212" y="52" width="56" height="56" fill="#fff"/>
+  <rect x="224" y="64" width="32" height="32" fill="#111827"/>
+  <rect x="40" y="200" width="80" height="80" fill="#111827"/>
+  <rect x="52" y="212" width="56" height="56" fill="#fff"/>
+  <rect x="64" y="224" width="32" height="32" fill="#111827"/>
+  <rect x="150" y="150" width="12" height="12" fill="#111827"/>
+  <rect x="174" y="150" width="12" height="12" fill="#111827"/>
+  <rect x="198" y="150" width="12" height="12" fill="#111827"/>
+  <rect x="222" y="150" width="12" height="12" fill="#111827"/>
+  <rect x="150" y="174" width="12" height="12" fill="#111827"/>
+  <rect x="198" y="174" width="12" height="12" fill="#111827"/>
+  <rect x="246" y="174" width="12" height="12" fill="#111827"/>
+  <rect x="150" y="198" width="12" height="12" fill="#111827"/>
+  <rect x="174" y="198" width="12" height="12" fill="#111827"/>
+  <rect x="222" y="198" width="12" height="12" fill="#111827"/>
+  <rect x="246" y="198" width="12" height="12" fill="#111827"/>
+  <rect x="174" y="222" width="12" height="12" fill="#111827"/>
+  <rect x="198" y="222" width="12" height="12" fill="#111827"/>
+  <rect x="246" y="222" width="12" height="12" fill="#111827"/>
+  <rect x="150" y="246" width="12" height="12" fill="#111827"/>
+  <rect x="222" y="246" width="12" height="12" fill="#111827"/>
+</svg>
