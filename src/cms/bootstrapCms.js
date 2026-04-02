@@ -4,6 +4,7 @@
  * - 仅当 items 为非空数组时才覆盖内置默认数据
  */
 import { defaultHisunCms } from "./config.js";
+import { fetchSanityNewsItems, fetchSanityPartnerCases } from "./sanity.js";
 
 function dataUrl(name) {
   const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
@@ -25,13 +26,23 @@ export async function prefetchCmsData() {
 
   window.HISUN_CMS = { ...defaultHisunCms, ...window.HISUN_CMS };
 
+  // 1) 先尝试从 Sanity 拉取（成功则优先使用）
+  const [sanityNews, sanityCases] = await Promise.all([fetchSanityNewsItems(), fetchSanityPartnerCases()]);
+  if (Array.isArray(sanityNews) && sanityNews.length > 0) {
+    window.HISUN_CMS.newsItems = sanityNews;
+  }
+  if (Array.isArray(sanityCases) && sanityCases.length > 0) {
+    window.HISUN_CMS.partnerCases = sanityCases;
+  }
+
+  // 2) 如果 Sanity 没有数据，再回退到静态 JSON
   const [newsWrap, casesWrap] = await Promise.all([fetchJson("news"), fetchJson("partner-cases")]);
 
-  if (newsWrap && Array.isArray(newsWrap.items) && newsWrap.items.length > 0) {
+  if (!window.HISUN_CMS.newsItems && newsWrap && Array.isArray(newsWrap.items) && newsWrap.items.length > 0) {
     window.HISUN_CMS.newsItems = newsWrap.items;
   }
 
-  if (casesWrap && Array.isArray(casesWrap.items) && casesWrap.items.length > 0) {
+  if (!window.HISUN_CMS.partnerCases && casesWrap && Array.isArray(casesWrap.items) && casesWrap.items.length > 0) {
     window.HISUN_CMS.partnerCases = casesWrap.items;
   }
 }
