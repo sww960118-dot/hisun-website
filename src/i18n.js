@@ -16,6 +16,11 @@ export const I18N = {
         sub_ab_3: { zh: "企业文化", en: "Corporate culture", "zh-hant": "企業文化" },
         sub_ab_4: { zh: "企业荣誉", en: "Honors", "zh-hant": "企業榮譽" },
         sub_ab_5: { zh: "联系我们", en: "Contact us", "zh-hant": "聯繫我們" },
+        about_contact_page_banner_desc: {
+          zh: "欢迎随时与我们取得联系，我们将竭诚为您提供咨询与支持。",
+          en: "Feel free to reach out. We’ll provide consultation and support.",
+          "zh-hant": "歡迎隨時與我們聯繫，我們將竭誠為您提供諮詢與支持。",
+        },
         biz_1: { zh: "业务处理方案", en: "Business processing solutions", "zh-hant": "業務處理方案" },
         biz_2: { zh: "渠道服务方案", en: "Channel service solutions", "zh-hant": "渠道服務方案" },
         biz_3: { zh: "工具方案", en: "Tooling solutions", "zh-hant": "工具方案" },

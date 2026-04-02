@@ -141,7 +141,6 @@
           class="hs-text-nav rounded-[8px] px-4 py-2 transition"
           :class="tabButtonClass(t)"
           :data-i18n="t.i18n"
-          :disabled="t.noScroll"
           @click="onTabClick(t)"
         ></button>
       </div>
@@ -378,12 +377,13 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { DEFAULT_BANNERS, normalizeBanner, loadBanners } from "../cms/banners.js";
 import BannerNoticeBar from "../components/BannerNoticeBar.vue";
 import CultureValueIcon from "../components/blocks/CultureValueIcon.vue";
 
 const route = useRoute();
+const router = useRouter();
 const activeId = ref("about-group");
 
 const BANNER_AUTO_MS = 3000;
@@ -552,7 +552,9 @@ const SPY_OFFSET = 140;
 
 function tabButtonClass(t) {
   if (t.noScroll) {
-    return "cursor-not-allowed border border-dashed border-zinc-200/90 bg-zinc-50/90 text-zinc-400 dark:border-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-500";
+    return route.name === "about-contact"
+      ? "bg-[#3d59ff] text-white shadow-lg shadow-[#3d59ff]/25 cursor-pointer"
+      : "cursor-pointer border border-dashed border-zinc-200/90 bg-zinc-50/90 text-zinc-600 hover:border-[#3d59ff]/40 dark:border-zinc-600 dark:bg-zinc-900/60 dark:text-zinc-300";
   }
   return activeId.value === t.id
     ? "bg-[#3d59ff] text-white shadow-lg shadow-[#3d59ff]/25"
@@ -560,7 +562,10 @@ function tabButtonClass(t) {
 }
 
 function onTabClick(t) {
-  if (t.noScroll) return;
+  if (t.noScroll) {
+    router.push({ name: "about-contact" });
+    return;
+  }
   if (t.id) scrollTo(t.id);
 }
 

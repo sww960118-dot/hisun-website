@@ -145,4 +145,15 @@ html.dark .ui-search__input::placeholder {
 html.dark .ui-search__msg.is-empty {
   color: #94a3b8;
 }
+
+/* 深色模式：搜索按钮图标用白色，提升可见性 */
+html.dark .ui-search__btn img {
+  opacity: 1;
+  filter: brightness(0) invert(1);
+}
+
+html.dark .ui-search__btn:hover img {
+  opacity: 1;
+  filter: brightness(0) invert(1);
+}
 </style>

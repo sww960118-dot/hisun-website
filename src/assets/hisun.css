@@ -959,6 +959,37 @@ main img {
     transition: none !important;
   }
 }
+
+/* ===== 移动端性能降级（减少卡顿与“点击不生效”）=====
+ * 手机上毛玻璃/backdrop-filter 与大量 blur/filter 容易导致掉帧，触摸事件也会被延迟。
+ * 这里对触控设备做温和降级：关闭 Banner 光晕层、减少 reveal 的 blur。
+ */
+@media (hover: none), (pointer: coarse) {
+  .banner-glow-trail,
+  .banner-glow-follow,
+  .banner-glow-sheen {
+    display: none !important;
+  }
+
+  .reveal {
+    filter: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 进一步：小屏关闭毛玻璃，显著降低合成压力 */
+  .glass-header,
+  .glass-nav,
+  .lang-switch-glass,
+  .glass-frame,
+  .glass-stat-liquid,
+  .glass-stat-cta,
+  #fabQrPanel,
+  #banner .banner-cta-liquid {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
 /* 首页 Banner：PPT 式横向推入（下一张从右入，上一张从左入） */
 #banner .banner-slide-anim {
   will-change: transform;
@@ -991,8 +1022,7 @@ main img {
 }
 /* Banner 閰嶅浘涓婄殑娓愬彉鍗婇€忔槑閬僵锛屼繚璇佸乏渚ф枃妗堝彲璇?*/
 #banner .banner-scrim {
-  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, transparent 42%, rgba(0, 0, 0, 0.55) 100%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(15, 23, 42, 0.52) 48%, rgba(15, 23, 42, 0.22) 100%);
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 /* Banner 鼠标跟随：拖尾层（较小范围 + 位移后呈液态拖尾，非大片光晕） */

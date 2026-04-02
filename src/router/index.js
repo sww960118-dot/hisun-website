@@ -94,6 +94,7 @@ const router = createRouter({
       children: [
         { path: "", name: "home", component: () => import("../views/HomeView.vue") },
         { path: "about", name: "about", component: () => import("../views/AboutView.vue") },
+        { path: "about/contact", name: "about-contact", component: () => import("../views/AboutContactView.vue") },
         { path: "business", name: "business", component: () => import("../views/BusinessView.vue") },
         {
           path: "business/solutions",

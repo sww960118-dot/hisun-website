@@ -42,7 +42,7 @@
               <RouterLink
                 to="/about"
                 class="hs-text-nav nav-link-main flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl px-2 py-2 text-center text-zinc-600 dark:text-zinc-300"
-                :class="route.name === 'about' ? '!text-[var(--theme-primary)]' : ''"
+                :class="['about', 'about-contact'].includes(route.name) ? '!text-[var(--theme-primary)]' : ''"
               >
                 <span data-i18n="nav_about">走进高阳</span>
                 <svg class="h-4 w-4 shrink-0 opacity-60 pointer-events-none"><use href="#i-chevron"/></svg>
@@ -53,7 +53,7 @@
                   <RouterLink class="sub-link" :to="{ name: 'about', hash: '#about-jinxin' }" data-i18n="sub_ab_2">公司简介</RouterLink>
                   <RouterLink class="sub-link" :to="{ name: 'about', hash: '#about-culture' }" data-i18n="sub_ab_3">企业文化</RouterLink>
                   <RouterLink class="sub-link" :to="{ name: 'about', hash: '#about-honors' }" data-i18n="sub_ab_4">企业荣誉</RouterLink>
-                  <span class="sub-link cursor-default" data-i18n="sub_ab_5">联系我们</span>
+                  <RouterLink class="sub-link" :to="{ name: 'about-contact' }" data-i18n="sub_ab_5">联系我们</RouterLink>
                 </div>
               </div>
             </div>
@@ -218,7 +218,14 @@
                 <RouterLink class="sub-link !py-2" :to="{ name: 'about', hash: '#about-jinxin' }" data-i18n="sub_ab_2" @click="closeMobileNav">公司简介</RouterLink>
                 <RouterLink class="sub-link !py-2" :to="{ name: 'about', hash: '#about-culture' }" data-i18n="sub_ab_3" @click="closeMobileNav">企业文化</RouterLink>
                 <RouterLink class="sub-link !py-2" :to="{ name: 'about', hash: '#about-honors' }" data-i18n="sub_ab_4" @click="closeMobileNav">企业荣誉</RouterLink>
-                <span class="sub-link !py-2 cursor-default" data-i18n="sub_ab_5" @click="closeMobileNav">联系我们</span>
+                <RouterLink
+                  class="sub-link !py-2"
+                  :to="{ name: 'about-contact' }"
+                  data-i18n="sub_ab_5"
+                  @click="closeMobileNav"
+                >
+                  联系我们
+                </RouterLink>
               </div>
             </div>
             <div class="mobile-acc rounded-xl border border-zinc-100 dark:border-zinc-800">
@@ -372,7 +379,7 @@
                 <li><RouterLink class="hs-text-footer block" :to="{ name: 'about', hash: '#about-jinxin' }" data-i18n="sub_ab_2">公司简介</RouterLink></li>
                 <li><RouterLink class="hs-text-footer block" :to="{ name: 'about', hash: '#about-culture' }" data-i18n="sub_ab_3">企业文化</RouterLink></li>
                 <li><RouterLink class="hs-text-footer block" :to="{ name: 'about', hash: '#about-honors' }" data-i18n="sub_ab_4">企业荣誉</RouterLink></li>
-                <li><span class="hs-text-footer block cursor-default" data-i18n="sub_ab_5">联系我们</span></li>
+                <li><RouterLink class="hs-text-footer block hover:text-white" :to="{ name: 'about-contact' }" data-i18n="sub_ab_5">联系我们</RouterLink></li>
               </ul>
             </div>
             <div>

@@ -42,13 +42,27 @@
         <!-- 岗位列表随筛选动态增删节点：勿用全局 .reveal，否则 IO 不会重新 observe，新节点会一直保持 opacity:0 -->
         <div class="join-job-list mt-4 space-y-3">
           <section v-for="job in filteredJobs" :key="job.id" class="job-card">
-            <header class="job-card__head" :class="{ 'is-expanded': expandedJobId === job.id }">
+            <header
+              class="job-card__head"
+              :class="{ 'is-expanded': expandedJobId === job.id }"
+              role="button"
+              tabindex="0"
+              :aria-expanded="expandedJobId === job.id ? 'true' : 'false'"
+              @click="toggleJobDetail(job.id)"
+              @keydown.enter.prevent="toggleJobDetail(job.id)"
+              @keydown.space.prevent="toggleJobDetail(job.id)"
+            >
               <h3 class="job-card__title">{{ job.title }}</h3>
               <p class="job-card__meta">招聘人数：{{ job.headcount }}</p>
               <p class="job-card__meta">工作地点：{{ job.location }}</p>
               <p class="job-card__meta">学历要求：{{ job.degree }}</p>
               <p class="job-card__meta">发布时间：{{ job.publishDate }}</p>
-              <button type="button" class="job-card__toggle" :aria-label="expandedJobId === job.id ? '收起岗位详情' : '展开岗位详情'" @click="toggleJobDetail(job.id)">
+              <button
+                type="button"
+                class="job-card__toggle"
+                :aria-label="expandedJobId === job.id ? '收起岗位详情' : '展开岗位详情'"
+                @click.stop="toggleJobDetail(job.id)"
+              >
                 <span class="job-card__toggle-icon" :class="{ 'is-open': expandedJobId === job.id }">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M6 9l6 6 6-6" />
@@ -323,6 +337,7 @@ function applyJob(job) {
     align-items: start;
     gap: 6px;
     padding: 12px 14px;
+    cursor: pointer;
   }
   .job-card__toggle {
     display: none;
