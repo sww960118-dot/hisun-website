@@ -63,6 +63,26 @@ function splitPortableTextToParagraphs(text) {
     .filter(Boolean);
 }
 
+const CN_TZ = "Asia/Shanghai";
+
+/** Sanity datetime → 中国时区日历日 YYYY-MM-DD（与后台「自然日」观感一致，避免按 UTC 截断差一天） */
+function sanityDateToYmdChina(value) {
+  if (value == null || value === "") return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: CN_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+  if (!y || !m || !day) return "";
+  return `${y}-${m}-${day}`;
+}
+
 /** 按正文块顺序取第一张图（Sanity image 或 embedImage 外链） */
 function firstImageUrlFromPortable(blocks) {
   if (!Array.isArray(blocks)) return "";
@@ -113,7 +133,8 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
       category in ["notice", "headline", "staff"] => category,
       true => "notice"
     ),
-    "date": coalesce(string(publishedAt)[0..9], ""),
+    "publishedAt": publishedAt,
+    "_createdAt": _createdAt,
     "views": 0,
     "title": coalesce(title, ""),
     "desc": coalesce(excerpt, ""),
@@ -133,8 +154,13 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
     const coverUrl = it?.image != null && it.image !== "" ? String(it.image).trim() : "";
     const bodyFirstUrl = firstImageUrlFromPortable(it?.contentPortable);
     const image = coverUrl || bodyFirstUrl || "";
+    const date =
+      sanityDateToYmdChina(it?.publishedAt) ||
+      sanityDateToYmdChina(it?._createdAt) ||
+      "";
     return {
       ...it,
+      date,
       image,
       desc,
       editor,
@@ -209,7 +235,7 @@ export async function fetchSanitySupportMaintenance({ limit = 100 } = {}) {
     const paragraphs = splitPortableTextToParagraphs(bodyText);
     const excerptTrim = String(row.excerpt || "").trim();
     const cardDesc = excerptTrim || truncateSupportCardDesc(bodyText);
-    const dateRaw = row.publishedAt ? String(row.publishedAt).slice(0, 10) : "2026-01-01";
+    const dateRaw = sanityDateToYmdChina(row.publishedAt) || "2026-01-01";
     const editorName = String(row.editor || "").trim() || "高阳金信";
 
     buckets[cat].push({
@@ -278,7 +304,7 @@ export async function fetchSanityJobPostings({ limit = 100 } = {}) {
     "headcount": headcount,
     "location": workLocation,
     "degree": education,
-    "publishDate": coalesce(string(publishedAt)[0..9], ""),
+    "publishedAt": publishedAt,
     "responsibilities": coalesce(responsibilities, []),
     "requirements": coalesce(requirements, [])
   }`;
@@ -291,7 +317,7 @@ export async function fetchSanityJobPostings({ limit = 100 } = {}) {
     headcount: Number(row.headcount) || 1,
     location: String(row.location || ""),
     degree: String(row.degree || ""),
-    publishDate: String(row.publishDate || "2026-01-01"),
+    publishDate: sanityDateToYmdChina(row.publishedAt) || "2026-01-01",
     responsibilities: Array.isArray(row.responsibilities)
       ? row.responsibilities.map((x) => String(x).trim()).filter(Boolean)
       : [],
@@ -345,7 +371,7 @@ export async function fetchSanityPartnerCases({ limit = 50 } = {}) {
       content[_type == "image"][0].asset->url,
       content[_type == "embedImage"][0].url
     ),
-    "publishDate": coalesce(string(publishedAt)[0..9], ""),
+    "publishedAt": publishedAt,
     "bodyText": pt::text(content),
     "excerpt": coalesce(excerpt, ""),
     "editor": coalesce(editor, ""),
@@ -370,7 +396,7 @@ export async function fetchSanityPartnerCases({ limit = 50 } = {}) {
       source: "典型案例",
       editor: editorName,
       views: 0,
-      publishDate: it.publishDate || "2026-01-01",
+      publishDate: sanityDateToYmdChina(it.publishedAt) || "2026-01-01",
       image,
       content: paragraphs,
       contentPortable: Array.isArray(it?.contentPortable) ? it.contentPortable : null,

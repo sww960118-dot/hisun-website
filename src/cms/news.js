@@ -10,7 +10,7 @@ export function newsPlaceholderImageUrl() {
 
 function normalizeNewsItem(item, index) {
   const cat = NEWS_CATEGORIES.has(item?.category) ? item.category : "notice";
-  const dateRaw = String(item?.date ?? "").slice(0, 10);
+  const dateRaw = String(item?.date ?? "").trim().slice(0, 10);
   let image = String(item?.image || "").trim();
   if (!image) image = newsPlaceholderImageUrl();
   return {
