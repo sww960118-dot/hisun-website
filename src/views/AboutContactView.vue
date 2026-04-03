@@ -231,13 +231,15 @@
                   />
                 </svg>
 
-                <!-- 五地标注（按经纬度投影） -->
+                <!-- 五地标注（与 SVG 轮廓对齐的百分比坐标） -->
                 <div class="absolute inset-0" aria-hidden="true">
                   <button
                     v-for="m in mapMarkers"
                     :key="m.key"
                     type="button"
                     class="contact-map__marker text-[#3d59ff] dark:text-[#8aa0ff]"
+                    :title="m.label"
+                    :aria-label="m.label"
                     :style="{
                       left: m.xPct + '%',
                       top: m.yPct + '%',
@@ -329,8 +331,8 @@
           </div>
         </section>
 
-        <!-- 3) 在线留言 -->
-        <section class="mt-12">
+        <!-- 3) 在线留言（#contact-message：侧栏「联系」等锚点跳转） -->
+        <section id="contact-message" class="mt-12 scroll-mt-28">
           <div class="reveal mb-6 text-left">
             <h2 class="hs-text-block-h2 text-[#0f172a] dark:text-white">在线留言</h2>
             <div class="hs-heading-rule mt-4" aria-hidden="true"></div>
@@ -368,12 +370,19 @@
                 ></textarea>
               </div>
 
-              <div class="flex items-center gap-3 lg:col-span-2">
-                <button type="submit" class="hs-text-button btn-primary inline-flex h-[46px] items-center justify-center rounded-xl px-7 text-[14px] font-semibold text-white shadow-sm transition hover:brightness-105">
-                  提交
+              <div class="flex flex-col gap-2 lg:col-span-2 sm:flex-row sm:items-center sm:gap-3">
+                <button
+                  type="submit"
+                  :disabled="submitting"
+                  class="hs-text-button btn-primary inline-flex h-[46px] items-center justify-center rounded-xl px-7 text-[14px] font-semibold text-white shadow-sm transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {{ submitting ? "提交中…" : "提交" }}
                 </button>
-                <p class="text-[13px] text-zinc-500 dark:text-zinc-400">
-                  演示表单：目前只做前端展示，不会真正发送邮件。
+                <p v-if="formFeedback" class="text-[13px]" :class="formFeedback.type === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
+                  {{ formFeedback.text }}
+                </p>
+                <p v-else class="text-[13px] text-zinc-500 dark:text-zinc-400">
+                  提交后由后台保存，工作人员会尽快与您联系（部署需在服务器配置留言接口）。
                 </p>
               </div>
             </form>
@@ -592,50 +601,14 @@ const contactInfo = {
   salesHotline: "18665822796",
 };
 
-// 中国地图 outline（纯轮廓底图）用于叠加定位 icon
-const chinaMapOutlineUrl =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/China-outline.svg/1200px-China-outline.svg.png";
-
-// 五地（北京/上海/深圳/广州/香港）
-// x/y 用“经纬度到百分比”投影近似到地图容器上：后续如你有精确坐标，可直接替换 lon/lat。
-const mapRawLocations = [
-  { key: "beijing", label: "北京", lon: 116.4074, lat: 39.9042 },
-  { key: "shanghai", label: "上海", lon: 121.4737, lat: 31.2304 },
-  { key: "shenzhen", label: "深圳", lon: 114.0579, lat: 22.5431 },
-  { key: "guangzhou", label: "广州", lon: 113.2644, lat: 23.1291 },
-  { key: "hongkong", label: "香港", lon: 114.1694, lat: 22.3193 },
+/** 五地标注：线性经纬度 → 百分比与当前 SVG 中国轮廓不一致，低纬度会被压到图下方（视觉上像海南/广西）。此处按底图手工标定到珠三角一带。 */
+const mapMarkers = [
+  { key: "beijing", label: "北京", xPct: 66.5, yPct: 40.5 },
+  { key: "shanghai", label: "上海", xPct: 78.2, yPct: 56.5 },
+  { key: "guangzhou", label: "广州", xPct: 71.2, yPct: 69.2 },
+  { key: "shenzhen", label: "深圳", xPct: 73.6, yPct: 71 },
+  { key: "hongkong", label: "香港", xPct: 73.8, yPct: 73.2 },
 ];
-
-const LON_MIN = 73;
-const LON_MAX = 135;
-const LAT_MIN = 18;
-const LAT_MAX = 54;
-
-function lonLatToPct(lon, lat) {
-  const x = ((lon - LON_MIN) / (LON_MAX - LON_MIN)) * 100;
-  const y = ((LAT_MAX - lat) / (LAT_MAX - LAT_MIN)) * 100;
-  return { xPct: Math.max(0, Math.min(100, x)), yPct: Math.max(0, Math.min(100, y)) };
-}
-
-const mapMarkers = computed(() =>
-  mapRawLocations.map((p) => {
-    const { xPct, yPct } = lonLatToPct(p.lon, p.lat);
-    // 南方城市经纬度很接近：做一点点微调避免完全重叠
-    let dx = 0;
-    let dy = 0;
-    if (p.key === "guangzhou") {
-      dx = -1.2;
-      dy = 1.2;
-    } else if (p.key === "shenzhen") {
-      dx = 0.6;
-      dy = 2.2;
-    } else if (p.key === "hongkong") {
-      dx = 1.1;
-      dy = 1.6;
-    }
-    return { ...p, xPct: xPct + dx, yPct: yPct + dy };
-  })
-);
 
 const branches = [
   {
@@ -664,11 +637,47 @@ const form = ref({
   message: "",
 });
 
-function onSubmitMessage() {
-  // 无后端情况下做前端演示反馈
+const submitting = ref(false);
+const formFeedback = ref(null);
+
+const contactApiUrl = import.meta.env.VITE_CONTACT_API_URL || "/api/contact";
+
+async function onSubmitMessage() {
+  formFeedback.value = null;
   const name = form.value.name?.trim();
-  window.alert(`已收到${name ? name : "你的信息"}（演示表单，不会真正发送）。`);
-  form.value = { name: "", company: "", email: "", phone: "", message: "" };
+  const email = form.value.email?.trim();
+  const message = form.value.message?.trim();
+  if (!name || !email || !message) return;
+
+  submitting.value = true;
+  try {
+    const res = await fetch(contactApiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        message,
+        company: form.value.company?.trim() || "",
+        phone: form.value.phone?.trim() || "",
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (data.error === "server_not_configured") {
+        formFeedback.value = { type: "err", text: "留言服务未配置，请稍后再试或通过邮件联系我们。" };
+      } else {
+        formFeedback.value = { type: "err", text: "提交失败，请稍后重试或通过邮件联系我们。" };
+      }
+      return;
+    }
+    formFeedback.value = { type: "ok", text: "提交成功，我们会尽快与您联系。" };
+    form.value = { name: "", company: "", email: "", phone: "", message: "" };
+  } catch {
+    formFeedback.value = { type: "err", text: "网络异常，请检查网络后重试。" };
+  } finally {
+    submitting.value = false;
+  }
 }
 
 onMounted(async () => {

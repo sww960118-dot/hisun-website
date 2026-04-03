@@ -4,32 +4,38 @@
     role="region"
     aria-label="通知公告"
   >
-    <div
-      class="flex w-full min-w-0 flex-wrap items-center gap-y-2 px-4 py-2 text-[14px] leading-normal sm:px-6 lg:flex-nowrap lg:gap-y-0 lg:pl-[360px] lg:pr-[360px]"
-    >
-      <RouterLink
-        v-if="currentNotice"
-        :to="noticeDetailTo"
-        class="flex min-w-0 flex-1 cursor-pointer items-center rounded-sm text-left text-inherit no-underline transition hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 lg:flex-nowrap"
+    <div class="mx-auto flex w-full min-w-0 justify-center px-4 py-2 sm:px-6">
+      <!-- PC 最大 850px 居中；移动端全宽自适应；公告文案单行省略 -->
+      <div
+        class="flex w-full min-w-0 max-w-[min(100%,850px)] flex-wrap items-center gap-x-2 gap-y-1.5 text-[14px] leading-normal sm:flex-nowrap sm:gap-x-3"
       >
-        <span class="inline-flex h-5 w-5 shrink-0 text-white/90" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
-            <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke-linecap="round" />
-          </svg>
-        </span>
-        <span class="ml-4 min-w-0 max-w-[1000px] truncate">{{ currentNoticeLine }}</span>
-      </RouterLink>
-      <div v-else class="flex min-w-0 flex-1 items-center lg:flex-nowrap">
-        <span class="inline-flex h-5 w-5 shrink-0 text-white/90" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
-            <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke-linecap="round" />
-          </svg>
-        </span>
-        <span class="ml-4 min-w-0 max-w-[1000px] truncate">{{ currentNoticeLine }}</span>
+        <RouterLink
+          v-if="currentNotice"
+          :to="noticeDetailTo"
+          class="flex min-w-0 flex-1 cursor-pointer items-center rounded-sm text-left text-inherit no-underline transition hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 sm:min-w-[0]"
+        >
+          <span class="inline-flex h-5 w-5 shrink-0 text-white/90" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+              <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span class="ml-2 min-w-0 flex-1 truncate sm:ml-4">{{ currentNoticeLine }}</span>
+        </RouterLink>
+        <div v-else class="flex min-w-0 flex-1 items-center sm:min-w-[0]">
+          <span class="inline-flex h-5 w-5 shrink-0 text-white/90" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+              <path d="M11 5L6 9H2v6h4l5 4V5z" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span class="ml-2 min-w-0 flex-1 truncate sm:ml-4">{{ currentNoticeLine }}</span>
+        </div>
+        <span
+          class="shrink-0 whitespace-nowrap text-[13px] sm:ml-auto sm:text-[14px]"
+          data-i18n="notice_banner_stock"
+        ></span>
       </div>
-      <span class="ml-auto shrink-0 whitespace-nowrap pl-2 text-right lg:pl-0" data-i18n="notice_banner_stock"></span>
     </div>
   </div>
 </template>

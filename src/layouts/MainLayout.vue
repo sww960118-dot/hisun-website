@@ -469,10 +469,15 @@
             <span class="hs-text-fab max-w-[52px]" data-i18n="fab_solution">获取方案</span>
           </button>
         </div>
-        <a href="tel:01068452288" id="fabContact" class="fab-btn-square group flex flex-col items-center justify-center gap-0.5 rounded-2xl bg-[#35227b] text-white shadow-lg transition hover:brightness-105 hover:shadow-xl" title="鑱旂郴鍜ㄨ">
-            <svg class="icon-tone h-5 w-5 shrink-0 transition group-hover:scale-105"><use href="#i-message"/></svg>
-            <span class="hs-text-fab max-w-[52px] text-center" data-i18n="fab_contact">联系</span>
-        </a>
+        <RouterLink
+          id="fabContact"
+          :to="{ name: 'about-contact', hash: '#contact-message' }"
+          class="fab-btn-square group flex flex-col items-center justify-center gap-0.5 rounded-2xl bg-[#35227b] text-white shadow-lg transition hover:brightness-105 hover:shadow-xl"
+          title="联系我们 · 在线留言"
+        >
+          <svg class="icon-tone h-5 w-5 shrink-0 transition group-hover:scale-105"><use href="#i-message"/></svg>
+          <span class="hs-text-fab max-w-[52px] text-center" data-i18n="fab_contact">联系</span>
+        </RouterLink>
       </div>
       <button type="button" id="fabToTop" class="hs-text-fab fab-btn-square fixed right-2 bottom-[50px] z-[95] flex flex-col items-center justify-center gap-0.5 rounded-2xl border border-zinc-600/80 bg-black/40 uppercase tracking-wide text-white shadow-lg transition hover:bg-zinc-800 sm:right-4" aria-label="回到顶部" @click="scrollToTop">
         <svg class="icon-tone h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>

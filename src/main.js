@@ -1,13 +1,14 @@
 import "./styles/tailwind.css";
 import "./styles/tokens.css";
-import { prefetchCmsData } from "./cms/bootstrapCms.js";
+import { initCmsWindowSync, prefetchCmsData } from "./cms/bootstrapCms.js";
 
 if (typeof history !== "undefined" && "scrollRestoration" in history) {
   history.scrollRestoration = "manual";
 }
 
 async function start() {
-  await prefetchCmsData();
+  initCmsWindowSync();
+  prefetchCmsData().catch(() => {});
   await import("./i18n.js");
   const { createApp } = await import("vue");
   const App = (await import("./App.vue")).default;

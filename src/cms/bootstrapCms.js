@@ -54,10 +54,17 @@ async function applySanityToWindow() {
   }
 }
 
+/** 同步初始化 CMS 占位，便于首屏立即挂载 Vue；完整数据由 prefetchCmsData 后台拉取 */
+export function initCmsWindowSync() {
+  if (typeof window === "undefined") return;
+  window.HISUN_CMS = { ...defaultHisunCms, ...window.HISUN_CMS };
+  bumpCmsTick();
+}
+
 export async function prefetchCmsData() {
   if (typeof window === "undefined") return;
 
-  window.HISUN_CMS = { ...defaultHisunCms, ...window.HISUN_CMS };
+  initCmsWindowSync();
 
   await applySanityToWindow();
   bumpCmsTick();

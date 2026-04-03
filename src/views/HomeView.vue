@@ -538,10 +538,22 @@ function resetBannerTimer() {
   }, BANNER_AUTO_MS);
 }
 
+function preloadFirstBannerImage(url) {
+  if (!url || typeof document === "undefined") return;
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "image";
+  link.href = url;
+  link.setAttribute("fetchpriority", "high");
+  document.head.appendChild(link);
+}
+
 onMounted(async () => {
   try {
     const slides = await loadBanners();
     if (slides.length) bannerSlides.value = slides;
+    const firstUrl = bannerSlides.value[bannerIndex.value]?.imageUrl;
+    if (firstUrl) preloadFirstBannerImage(firstUrl);
   } catch {
     /* keep default */
   }

@@ -5,7 +5,7 @@ import { defaultHisunCms } from "./config.js";
  */
 export const DEFAULT_BANNERS = [
   {
-    imageUrl: "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1920&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1280&q=75",
     kicker: "",
     title: "",
     desc: "",
@@ -13,7 +13,7 @@ export const DEFAULT_BANNERS = [
     cta2: "走进高阳",
   },
   {
-    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1920&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1280&q=75",
     kicker: "",
     title: "",
     desc: "",
@@ -21,7 +21,7 @@ export const DEFAULT_BANNERS = [
     cta2: "走进高阳",
   },
   {
-    imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1920&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1280&q=75",
     kicker: "",
     title: "",
     desc: "",
