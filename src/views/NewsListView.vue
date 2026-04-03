@@ -55,14 +55,13 @@
           ref="newsGridRef"
           class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-7"
         >
-          <a
+          <RouterLink
             v-for="(item, index) in filteredArticles"
             :key="`${listAnimPulse}-${item.id}`"
-            href="#"
+            :to="newsDetailRoute(item)"
             class="biz-news-list-card group flex flex-col pb-4 no-underline"
             :class="{ 'news-list-card-enter': listAnimPulse > 0 }"
             :style="listAnimPulse > 0 ? newsCardEnterStyle(index) : undefined"
-            @click.prevent="openDetail(item)"
           >
             <div class="biz-news-list-card__media mt-0 overflow-hidden rounded-lg">
               <img :src="item.image" alt="" class="biz-news-list-card__img h-[170px] w-full object-cover transition duration-500" loading="lazy" />
@@ -75,7 +74,7 @@
                 <span>阅读 {{ formatViews(item.views) }}</span>
               </div>
             </div>
-          </a>
+          </RouterLink>
         </div>
       </div>
     </section>
@@ -191,13 +190,14 @@ function setCategory(value) {
   router.replace({ name: "news", query: q });
 }
 
-function openDetail(item) {
+/** 使用 RouterLink 真实路由，避免 a[href="#"] + preventDefault 在部分环境下点击无效 */
+function newsDetailRoute(item) {
   let entry = "home";
   if (route.query.from === "business") entry = "business";
   else if (route.query.from === "nav") entry = "nav";
-  const q = { id: item.id, from: "news", entry };
+  const q = { id: String(item.id), from: "news", entry };
   if (route.query.category) q.nc = String(route.query.category);
-  router.push({ name: "news-detail", query: q });
+  return { name: "news-detail", query: q };
 }
 
 function formatViews(value) {
