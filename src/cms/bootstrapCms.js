@@ -4,7 +4,11 @@
  * - 仅当 items 为非空数组时才覆盖内置默认数据
  */
 import { defaultHisunCms } from "./config.js";
-import { fetchSanityNewsItems, fetchSanityPartnerCases } from "./sanity.js";
+import {
+  fetchSanityNewsItems,
+  fetchSanityPartnerCases,
+  fetchSanitySupportMaintenance,
+} from "./sanity.js";
 
 function dataUrl(name) {
   const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
@@ -27,12 +31,20 @@ export async function prefetchCmsData() {
   window.HISUN_CMS = { ...defaultHisunCms, ...window.HISUN_CMS };
 
   // 1) 先尝试从 Sanity 拉取（成功则优先使用）
-  const [sanityNews, sanityCases] = await Promise.all([fetchSanityNewsItems(), fetchSanityPartnerCases()]);
+  const [sanityNews, sanityCases, sanitySupport] = await Promise.all([
+    fetchSanityNewsItems(),
+    fetchSanityPartnerCases(),
+    fetchSanitySupportMaintenance(),
+  ]);
   if (Array.isArray(sanityNews) && sanityNews.length > 0) {
     window.HISUN_CMS.newsItems = sanityNews;
   }
   if (Array.isArray(sanityCases) && sanityCases.length > 0) {
     window.HISUN_CMS.partnerCases = sanityCases;
+  }
+  if (sanitySupport?.sections && sanitySupport?.details?.length) {
+    window.HISUN_CMS.supportSections = sanitySupport.sections;
+    window.HISUN_CMS.supportDetails = sanitySupport.details;
   }
 
   // 2) 如果 Sanity 没有数据，再回退到静态 JSON

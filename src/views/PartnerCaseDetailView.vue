@@ -34,7 +34,12 @@
                   <span>阅读：{{ formatViews(activeCase.views) }}</span>
                   <time>发布时间：{{ activeCase.publishDate }}</time>
                 </div>
-                <p class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300">{{ activeCase.summary }}</p>
+                <p
+                  v-if="!activeCase.cmsContentOnly && activeCase.summary"
+                  class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300"
+                >
+                  {{ activeCase.summary }}
+                </p>
                 <p
                   v-for="(p, idx) in detailParagraphs"
                   :key="`p-${idx}`"
@@ -189,11 +194,14 @@ const nextCase = computed(() => {
 const detailParagraphs = computed(() => {
   const c = activeCase.value;
   if (!c) return [];
+  if (c.cmsContentOnly && Array.isArray(c.content) && c.content.length) {
+    return c.content.map((x) => String(x).trim()).filter(Boolean);
+  }
   return [
     `项目聚焦于${c.title}，以可持续交付和分阶段上线为原则，兼顾业务连续性与技术演进。`,
     `围绕“${c.summary}”这一目标，团队从架构设计、数据治理、运维保障三方面同步推进，并形成标准化实施方法。`,
     "上线后系统在稳定性、处理效率与合规可审计性方面持续提升，为后续能力扩展打下了统一底座。",
-    ...c.content,
+    ...(Array.isArray(c.content) ? c.content : []),
   ];
 });
 

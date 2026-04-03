@@ -14,7 +14,12 @@ function normalizeNewsItem(item, index) {
     desc: String(item?.desc ?? item?.summary ?? ""),
     image: String(item?.image || ""),
     source: item?.source,
-    editor: item?.editor,
+    editor: (() => {
+      const e = item?.editor;
+      if (e == null || e === "") return undefined;
+      const s = String(e).trim();
+      return s || undefined;
+    })(),
     content: Array.isArray(item?.content) ? item.content.map((x) => String(x)) : [],
   };
 }
