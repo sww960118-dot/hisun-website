@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* 与原先 cdn.tailwindcss.com 的 darkMode: "class" 一致：html/body 带 .dark 时启用 dark: 变体 */
+@custom-variant dark (&:where(.dark, .dark *));

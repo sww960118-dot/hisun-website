@@ -1,3 +1,4 @@
+import "./styles/tailwind.css";
 import "./styles/tokens.css";
 import { prefetchCmsData } from "./cms/bootstrapCms.js";
 
