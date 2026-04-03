@@ -21,6 +21,7 @@ function normalizeNewsItem(item, index) {
       return s || undefined;
     })(),
     content: Array.isArray(item?.content) ? item.content.map((x) => String(x)) : [],
+    contentPortable: Array.isArray(item?.contentPortable) ? item.contentPortable : null,
   };
 }
 

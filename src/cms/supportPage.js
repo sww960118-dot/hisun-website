@@ -116,6 +116,7 @@ function normalizeSupportDetailRecord(x) {
     publishDate: String(x.publishDate || "2025-08-12"),
     image: String(x.image || SUPPORT_DETAIL_FALLBACK_IMAGES[0]),
     content: Array.isArray(x.content) ? x.content.map((p) => String(p)) : [],
+    contentPortable: Array.isArray(x.contentPortable) ? x.contentPortable : null,
   };
 }
 

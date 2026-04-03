@@ -143,6 +143,7 @@ function normalizePartnerCase(item, index) {
     publishDate: item.publishDate || fallbackDate,
     image: item.image || CASE_IMG,
     content: Array.isArray(item.content) ? item.content : [],
+    contentPortable: Array.isArray(item.contentPortable) ? item.contentPortable : null,
     /** Sanity 等 CMS 来源：详情页只展示正文段落，不拼接演示模板 */
     cmsContentOnly: Boolean(item.cmsContentOnly),
   };

@@ -40,7 +40,9 @@
                 >
                   {{ activeCase.summary }}
                 </p>
+                <ArticleBodySegments v-if="bodySegments.length" :segments="bodySegments" />
                 <p
+                  v-else
                   v-for="(p, idx) in detailParagraphs"
                   :key="`p-${idx}`"
                   class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300"
@@ -162,7 +164,9 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
+import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
 import { NEWS_ITEMS } from "../cms/news.js";
 import { PARTNER_CASE_ARTICLES } from "../cms/partnersPage.js";
 
@@ -203,6 +207,14 @@ const detailParagraphs = computed(() => {
     "上线后系统在稳定性、处理效率与合规可审计性方面持续提升，为后续能力扩展打下了统一底座。",
     ...(Array.isArray(c.content) ? c.content : []),
   ];
+});
+
+const bodySegments = computed(() => {
+  const c = activeCase.value;
+  if (!c?.cmsContentOnly) return [];
+  const raw = c.contentPortable;
+  if (!raw || !Array.isArray(raw)) return [];
+  return portableTextToArticleSegments(raw);
 });
 
 function toDateValue(date) {

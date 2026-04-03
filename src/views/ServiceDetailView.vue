@@ -36,7 +36,9 @@
                   <time>发布时间：{{ detail.publishDate }}</time>
                 </div>
                 <p v-if="detailLead" class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300">{{ detailLead }}</p>
+                <ArticleBodySegments v-if="bodySegments.length" :segments="bodySegments" />
                 <p
+                  v-else
                   v-for="(p, idx) in detailParagraphs"
                   :key="`p-${idx}`"
                   class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300"
@@ -157,7 +159,9 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
+import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
 import { NEWS_ITEMS } from "../cms/news.js";
 import { SUPPORT_DETAIL_ITEMS } from "../cms/supportPage.js";
 
@@ -183,6 +187,12 @@ const detailParagraphs = computed(() => {
   const d = detail.value;
   if (!d || !Array.isArray(d.content) || !d.content.length) return [];
   return d.content.map((x) => String(x).trim()).filter(Boolean);
+});
+
+const bodySegments = computed(() => {
+  const raw = detail.value?.contentPortable;
+  if (!raw || !Array.isArray(raw)) return [];
+  return portableTextToArticleSegments(raw);
 });
 
 const detailCrumbs = computed(() => {

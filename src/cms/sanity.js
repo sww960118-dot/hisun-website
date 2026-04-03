@@ -43,6 +43,34 @@ function splitPortableTextToParagraphs(text) {
     .filter(Boolean);
 }
 
+/**
+ * 正文 Portable Text：显式展开 image / embedImage / block，避免仅用 `@` 时 embedImage 在 CDN 上丢失。
+ */
+const GROQ_CONTENT_PORTABLE = `content[]{
+  _type == "image" => {
+    "_type": "image",
+    "_key": _key,
+    "alt": alt,
+    "url": asset->url
+  },
+  _type == "embedImage" => {
+    "_type": "embedImage",
+    "_key": _key,
+    "url": url,
+    "alt": alt
+  },
+  _type == "block" => {
+    "_type": "block",
+    "_key": _key,
+    "style": style,
+    "listItem": listItem,
+    "level": level,
+    "children": children,
+    "markDefs": markDefs
+  },
+  true => @
+}`;
+
 export async function fetchSanityNewsItems({ limit = 50 } = {}) {
   // 仅取页面展示需要的字段；正文用 pt::text 生成纯文本
   const q = `*[_type == "news"] | order(pinned desc, publishedAt desc)[0...$limit]{
@@ -57,7 +85,8 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
     "desc": coalesce(excerpt, ""),
     "image": coalesce(coverImage.asset->url, ""),
     "editor": coalesce(editor, ""),
-    "contentText": pt::text(content)
+    "contentText": pt::text(content),
+    "contentPortable": ${GROQ_CONTENT_PORTABLE}
   }`;
   const res = await sanityQuery(q, { limit });
   if (!Array.isArray(res)) return null;
@@ -72,6 +101,7 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
       desc,
       editor,
       content: paragraphs,
+      contentPortable: Array.isArray(it?.contentPortable) ? it.contentPortable : null,
     };
   });
 }
@@ -120,7 +150,8 @@ export async function fetchSanitySupportMaintenance({ limit = 100 } = {}) {
     "publishedAt": coalesce(publishedAt, _createdAt),
     "bodyText": pt::text(content),
     "excerpt": coalesce(excerpt, ""),
-    "editor": coalesce(editor, "")
+    "editor": coalesce(editor, ""),
+    "contentPortable": ${GROQ_CONTENT_PORTABLE}
   }`;
   const rows = await sanityQuery(q, { limit });
   if (!Array.isArray(rows) || rows.length === 0) return null;
@@ -162,6 +193,7 @@ export async function fetchSanitySupportMaintenance({ limit = 100 } = {}) {
         publishDate: dateRaw,
         image: SUPPORT_DETAIL_FALLBACK_IMAGES[0],
         content: paragraphs.length ? paragraphs : [cardDesc],
+        contentPortable: Array.isArray(row.contentPortable) ? row.contentPortable : null,
       },
     });
   }
@@ -236,11 +268,15 @@ export async function fetchSanityPartnerCases({ limit = 50 } = {}) {
     "id": _id,
     "title": coalesce(title, ""),
     "coverUrl": coverImage.asset->url,
-    "firstBodyImageUrl": content[_type == "image"][0].asset->url,
+    "firstBodyImageUrl": coalesce(
+      content[_type == "image"][0].asset->url,
+      content[_type == "embedImage"][0].url
+    ),
     "publishDate": coalesce(string(publishedAt)[0..9], ""),
     "bodyText": pt::text(content),
     "excerpt": coalesce(excerpt, ""),
-    "editor": coalesce(editor, "")
+    "editor": coalesce(editor, ""),
+    "contentPortable": ${GROQ_CONTENT_PORTABLE}
   }`;
   const res = await sanityQuery(q, { limit });
   if (!Array.isArray(res)) return null;
@@ -264,6 +300,7 @@ export async function fetchSanityPartnerCases({ limit = 50 } = {}) {
       publishDate: it.publishDate || "2026-01-01",
       image,
       content: paragraphs,
+      contentPortable: Array.isArray(it?.contentPortable) ? it.contentPortable : null,
       cmsContentOnly: true,
     };
   });

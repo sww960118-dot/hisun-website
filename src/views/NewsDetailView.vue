@@ -35,7 +35,9 @@
                   <time>发布时间：{{ article.date }}</time>
                 </div>
                 <p v-if="articleLead" class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300">{{ articleLead }}</p>
+                <ArticleBodySegments v-if="bodySegments.length" :segments="bodySegments" />
                 <p
+                  v-else
                   v-for="(p, idx) in detailParagraphs"
                   :key="`p-${idx}`"
                   class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300"
@@ -156,7 +158,9 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
+import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
 import { NEWS_ITEMS } from "../cms/news.js";
 
 const route = useRoute();
@@ -177,6 +181,12 @@ const detailParagraphs = computed(() => {
   const a = article.value;
   if (!a || !Array.isArray(a.content) || !a.content.length) return [];
   return a.content.map((x) => String(x).trim()).filter(Boolean);
+});
+
+const bodySegments = computed(() => {
+  const raw = article.value?.contentPortable;
+  if (!raw || !Array.isArray(raw)) return [];
+  return portableTextToArticleSegments(raw);
 });
 
 function newsListLink(fromVal) {
