@@ -430,6 +430,19 @@ const hotFilteredArticles = computed(() =>
   [...hotNewsCards.value].sort(compareNewsByPinnedThenDate)
 );
 
+/** 新闻列表或置顶状态变化时归零，避免环形轮播起始偏移导致首格不是「置顶第一条」 */
+watch(
+  () => {
+    cmsTick.value;
+    const items = getNewsItems();
+    if (!items.length) return "0";
+    return `${items.length}:${items.map((x) => `${x.id}:${x.pinned === true ? "p" : "n"}`).join(",")}`;
+  },
+  () => {
+    hotRowStart.value = 0;
+  },
+);
+
 const hotRowArticles = computed(() => {
   const list = hotFilteredArticles.value;
   if (!list.length) return [];

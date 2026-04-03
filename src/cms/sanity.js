@@ -141,7 +141,7 @@ const GROQ_CONTENT_PORTABLE = `content[]{
 
 export async function fetchSanityNewsItems({ limit = 50 } = {}) {
   // 仅取页面展示需要的字段；正文用 pt::text 生成纯文本
-  const q = `*[_type == "news"] | order(pinned desc, publishedAt desc)[0...$limit]{
+  const q = `*[_type == "news"] | order(coalesce(pinned, false) desc, publishedAt desc)[0...$limit]{
     "id": _id,
     "pinned": coalesce(pinned, false),
     "category": select(
@@ -175,6 +175,7 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
       "";
     return {
       ...it,
+      pinned: it?.pinned === true,
       date,
       image,
       desc,
