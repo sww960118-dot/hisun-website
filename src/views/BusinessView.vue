@@ -90,7 +90,17 @@
                     class="text-xl font-bold leading-snug text-[#0f172a] sm:text-2xl dark:text-white"
                     :data-i18n="titleKey"
                   ></h3>
-                  <p class="hs-text-body mt-4 text-[15px] leading-relaxed text-[#4b5563] dark:text-zinc-400" :data-i18n="descKey"></p>
+                  <p
+                    v-if="currentBizCategory.introduction"
+                    class="hs-text-body mt-4 line-clamp-2 text-[15px] leading-relaxed text-[#4b5563] dark:text-zinc-400"
+                  >
+                    {{ currentBizCategory.introduction }}
+                  </p>
+                  <p
+                    v-else
+                    class="hs-text-body mt-4 text-[15px] leading-relaxed text-[#4b5563] dark:text-zinc-400"
+                    :data-i18n="descKey"
+                  ></p>
                   <RouterLink
                     :to="{ name: 'business-solutions', query: { tab: String(activeTab) } }"
                     class="biz-learn-more-btn mt-7 inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-lg border border-[#3d59ff]/55 bg-white px-4 py-2.5 text-[14px] font-medium text-[#3d59ff] shadow-sm transition dark:border-[#3d59ff] dark:bg-transparent dark:text-[#3d59ff] dark:shadow-none"
@@ -118,14 +128,20 @@
                 <!-- 固定 4 列×192px，列/行间距 8px；四边内边距 24px（见 scoped） -->
                 <div class="biz-feature-row">
                   <RouterLink
-                    v-for="fi in featureIndices"
-                    :key="activeTab + '-' + fi"
-                    :to="{ name: 'solution-detail', query: { id: `p${activeTab + 1}-f${fi}`, tab: String(activeTab) } }"
+                    v-for="(mod, idx) in currentBizCategory.modules"
+                    :key="currentBizCategory.id + '-' + mod.id + '-' + idx"
+                    :to="featureTileTo(mod)"
                     class="biz-feature-tile group flex shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white px-2 text-center shadow-sm transition-colors duration-200 hover:border-[#3d59ff] hover:bg-[#3d59ff] dark:border-zinc-600 dark:bg-zinc-800 dark:hover:border-[#3d59ff] dark:hover:bg-[#3d59ff]"
                   >
                     <span
+                      v-if="moduleTileTitle(mod)"
                       class="line-clamp-2 max-w-full px-1 text-center text-[12px] font-medium leading-tight text-[#1a1a1a] transition-colors duration-200 group-hover:text-white sm:text-[13px] dark:text-zinc-100 dark:group-hover:text-white"
-                      :data-i18n="featureKey(fi)"
+                      >{{ moduleTileTitle(mod) }}</span
+                    >
+                    <span
+                      v-else
+                      class="line-clamp-2 max-w-full px-1 text-center text-[12px] font-medium leading-tight text-[#1a1a1a] transition-colors duration-200 group-hover:text-white sm:text-[13px] dark:text-zinc-100 dark:group-hover:text-white"
+                      :data-i18n="mod.titleKey"
                     ></span>
                   </RouterLink>
                 </div>
@@ -359,12 +375,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { PARTNER_LOGOS } from "../cms/partners.js";
-import { BUSINESS_TAB_IMAGES, BUSINESS_FEATURE_COUNTS } from "../cms/businessPage.js";
+import { BUSINESS_TAB_IMAGES } from "../cms/businessPage.js";
+import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
 import { cmsTick } from "../cms/cmsTick.js";
 import { getNewsItems } from "../cms/news.js";
+import { I18N } from "../i18n.js";
 
 const TAB_COUNT = 5;
 const tabLabelKeys = ["biz_1", "biz_2", "biz_3", "biz_4", "biz_5"];
@@ -384,6 +402,29 @@ const hotNewsCards = computed(() => {
   cmsTick.value;
   return getNewsItems();
 });
+
+const solutionCategories = computed(() => {
+  cmsTick.value;
+  return resolveBusinessSolutionCategories();
+});
+
+const currentBizCategory = computed(
+  () => solutionCategories.value.find((c) => c.tabIndex === activeTab.value) ?? solutionCategories.value[0]
+);
+
+/** CMS 异步写入或 Tab 切换后补刷 #biz-solutions 内 data-i18n（简介走 CMS 时不依赖此项） */
+function refreshBizSolutionsI18n() {
+  const lang = typeof localStorage !== "undefined" ? localStorage.getItem("hisun_lang") || "zh" : "zh";
+  document.querySelectorAll("#biz-solutions [data-i18n]").forEach((el) => {
+    const k = el.getAttribute("data-i18n");
+    if (!k) return;
+    const row = I18N[k];
+    if (row) el.textContent = row[lang] || row.zh;
+  });
+}
+
+watch(cmsTick, () => nextTick(() => refreshBizSolutionsI18n()));
+watch(activeTab, () => nextTick(() => refreshBizSolutionsI18n()));
 
 const hotFilteredArticles = computed(() =>
   [...hotNewsCards.value].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -440,15 +481,22 @@ function selectTab(i) {
 const titleKey = computed(() => `biz_p${activeTab.value + 1}_title`);
 const descKey = computed(() => `biz_p${activeTab.value + 1}_desc`);
 
-const currentImage = computed(() => BUSINESS_TAB_IMAGES[activeTab.value] ?? BUSINESS_TAB_IMAGES[0]);
+const currentImage = computed(
+  () => currentBizCategory.value?.image || BUSINESS_TAB_IMAGES[activeTab.value] || BUSINESS_TAB_IMAGES[0]
+);
 
-const featureIndices = computed(() => {
-  const n = BUSINESS_FEATURE_COUNTS[activeTab.value] ?? 4;
-  return Array.from({ length: Math.max(1, n) }, (_, i) => i + 1);
-});
+function moduleTileTitle(mod) {
+  return mod.title && String(mod.title).trim() ? String(mod.title).trim() : "";
+}
 
-function featureKey(i) {
-  return `biz_p${activeTab.value + 1}_f${i}`;
+function featureTileTo(mod) {
+  if (mod.detailKind === "support" && mod.supportId) {
+    return {
+      name: "service-detail",
+      query: { id: mod.supportId, from: "business", tab: String(activeTab.value) },
+    };
+  }
+  return { name: "solution-detail", query: { id: mod.id, tab: String(activeTab.value) } };
 }
 
 const CONSULT_IMAGES = [

@@ -180,6 +180,9 @@ const supportDetailList = computed(() => {
 });
 
 const fromBusinessSolutions = computed(() => String(route.query.from ?? "") === "business-solutions");
+const fromBusinessMain = computed(() => String(route.query.from ?? "") === "business");
+/** 从解决方案页或主营业务页进入服务详情时，按该 Tab 下配置的「服务支持」顺序做上一篇/下一篇 */
+const fromBizFlow = computed(() => fromBusinessSolutions.value || fromBusinessMain.value);
 const businessSolutionsTab = computed(() => String(route.query.tab ?? "0"));
 
 function supportSectionHash(sectionId) {
@@ -222,6 +225,16 @@ const detailCrumbs = computed(() => {
       { i18nKey: "support_item_detail_crumb" },
     ];
   }
+  if (fromBusinessMain.value) {
+    return [
+      { to: "/", i18nKey: "crumb_home" },
+      {
+        to: { name: "business", hash: "#biz-solutions", query: { tab: businessSolutionsTab.value } },
+        i18nKey: "nav_biz",
+      },
+      { i18nKey: "support_item_detail_crumb" },
+    ];
+  }
   const sid = detail.value?.sectionId || "consult";
   return [
     { to: "/", i18nKey: "crumb_home" },
@@ -233,6 +246,9 @@ const detailCrumbs = computed(() => {
 const backToSupport = computed(() => {
   if (fromBusinessSolutions.value) {
     return { name: "business-solutions", query: { tab: businessSolutionsTab.value } };
+  }
+  if (fromBusinessMain.value) {
+    return { name: "business", query: { tab: businessSolutionsTab.value }, hash: "#biz-solutions" };
   }
   return {
     name: "support",
@@ -247,11 +263,17 @@ function serviceDetailQuery(id) {
       query: { id, from: "business-solutions", tab: businessSolutionsTab.value },
     };
   }
+  if (fromBusinessMain.value) {
+    return {
+      name: "service-detail",
+      query: { id, from: "business", tab: businessSolutionsTab.value },
+    };
+  }
   return { name: "service-detail", query: { id, from: "support" } };
 }
 
-const businessSolutionsSupportOrder = computed(() => {
-  if (!fromBusinessSolutions.value) return [];
+const bizFlowSupportOrder = computed(() => {
+  if (!fromBizFlow.value) return [];
   cmsTick.value;
   const tab = parseInt(businessSolutionsTab.value, 10);
   const cats = resolveBusinessSolutionCategories();
@@ -263,8 +285,8 @@ const businessSolutionsSupportOrder = computed(() => {
 const sectionSiblings = computed(() => {
   const d = detail.value;
   if (!d) return [];
-  if (fromBusinessSolutions.value && businessSolutionsSupportOrder.value.length) {
-    return businessSolutionsSupportOrder.value
+  if (fromBizFlow.value && bizFlowSupportOrder.value.length) {
+    return bizFlowSupportOrder.value
       .map((id) => supportDetailList.value.find((x) => x.id === id))
       .filter(Boolean);
   }

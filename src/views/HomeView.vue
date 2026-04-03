@@ -128,75 +128,37 @@
             <p class="hs-text-lead mt-3 max-w-2xl text-zinc-600 dark:text-zinc-400" data-i18n="sec_business_sub">深耕金融行业发展超过 25 年</p>
           </div>
           <div class="mt-12 grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-5">
-            <article class="reveal reveal--scale card-bolt flex flex-col overflow-hidden rounded-2xl">
+            <article
+              v-for="(cat, idx) in homeBusinessCategories"
+              :key="cat.id"
+              class="reveal reveal--scale card-bolt flex flex-col overflow-hidden rounded-2xl"
+              :class="HOME_BIZ_STAGGER[idx] || ''"
+            >
               <div class="card-bolt-img-wrap h-32 shrink-0 overflow-hidden rounded-t-2xl sm:h-36">
-                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=85" alt="" class="card-bolt-img h-full w-full object-cover" loading="lazy" width="600" height="320" />
+                <img
+                  :src="cat.image"
+                  alt=""
+                  class="card-bolt-img h-full w-full object-cover"
+                  loading="lazy"
+                  width="600"
+                  height="320"
+                />
               </div>
               <div class="card-bolt-body flex flex-1 flex-col items-start rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" data-i18n="biz_1">业务处理方案</h3>
-                <p class="hs-text-body mt-1.5 line-clamp-3 text-[#666666] dark:text-zinc-400" data-i18n="biz_1_desc">覆盖交易与核算全链路，稳定支撑核心账务与清算。</p>
-                <RouterLink
-                  :to="{ name: 'business-solutions', query: { tab: '0' } }"
-                  class="hs-text-btn-ghost biz-card-btn mt-auto inline-flex w-fit justify-center rounded-lg border border-[#3d59ff]/35 px-4 py-2 text-[#1a1a1a] no-underline transition hover:bg-black/[0.04] dark:border-white/30 dark:text-white dark:hover:bg-white/10"
+                <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" :data-i18n="homeBizTitleI18n(cat)"></h3>
+                <p
+                  v-if="cat.introduction"
+                  class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400"
                 >
-                  <span data-i18n="btn_detail">查看详情</span>
-                </RouterLink>
-              </div>
-            </article>
-            <article class="reveal reveal--scale card-bolt flex flex-col overflow-hidden rounded-2xl delay-75">
-              <div class="card-bolt-img-wrap h-32 shrink-0 overflow-hidden rounded-t-2xl sm:h-36">
-                <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=600&q=85" alt="" class="card-bolt-img h-full w-full object-cover" loading="lazy" />
-              </div>
-              <div class="card-bolt-body flex flex-1 flex-col items-start rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" data-i18n="biz_2">渠道服务方案</h3>
-                <p class="hs-text-body mt-1.5 line-clamp-3 text-[#666666] dark:text-zinc-400" data-i18n="biz_2_desc">统一渠道接入与运营，提升触达效率与体验一致性。</p>
+                  {{ cat.introduction }}
+                </p>
+                <p
+                  v-else
+                  class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400"
+                  :data-i18n="homeBizIntroI18n(cat)"
+                ></p>
                 <RouterLink
-                  :to="{ name: 'business-solutions', query: { tab: '1' } }"
-                  class="hs-text-btn-ghost biz-card-btn mt-auto inline-flex w-fit justify-center rounded-lg border border-[#3d59ff]/35 px-4 py-2 text-[#1a1a1a] no-underline transition hover:bg-black/[0.04] dark:border-white/30 dark:text-white dark:hover:bg-white/10"
-                >
-                  <span data-i18n="btn_detail">查看详情</span>
-                </RouterLink>
-              </div>
-            </article>
-            <article class="reveal reveal--scale card-bolt flex flex-col overflow-hidden rounded-2xl delay-100">
-              <div class="card-bolt-img-wrap h-32 shrink-0 overflow-hidden rounded-t-2xl sm:h-36">
-                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=85" alt="" class="card-bolt-img h-full w-full object-cover" loading="lazy" />
-              </div>
-              <div class="card-bolt-body flex flex-1 flex-col items-start rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" data-i18n="biz_3">工具方案</h3>
-                <p class="hs-text-body mt-1.5 line-clamp-3 text-[#666666] dark:text-zinc-400" data-i18n="biz_3_desc">工程化工具链与自动化能力，缩短交付周期、降低运维成本。</p>
-                <RouterLink
-                  :to="{ name: 'business-solutions', query: { tab: '2' } }"
-                  class="hs-text-btn-ghost biz-card-btn mt-auto inline-flex w-fit justify-center rounded-lg border border-[#3d59ff]/35 px-4 py-2 text-[#1a1a1a] no-underline transition hover:bg-black/[0.04] dark:border-white/30 dark:text-white dark:hover:bg-white/10"
-                >
-                  <span data-i18n="btn_detail">查看详情</span>
-                </RouterLink>
-              </div>
-            </article>
-            <article class="reveal reveal--scale card-bolt flex flex-col overflow-hidden rounded-2xl delay-150">
-              <div class="card-bolt-img-wrap h-32 shrink-0 overflow-hidden rounded-t-2xl sm:h-36">
-                <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=85" alt="" class="card-bolt-img h-full w-full object-cover" loading="lazy" />
-              </div>
-              <div class="card-bolt-body flex flex-1 flex-col items-start rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" data-i18n="biz_4">技术平台方案</h3>
-                <p class="hs-text-body mt-1.5 line-clamp-3 text-[#666666] dark:text-zinc-400" data-i18n="biz_4_desc">云原生与分布式架构底座，弹性扩展、满足峰值与连续性要求。</p>
-                <RouterLink
-                  :to="{ name: 'business-solutions', query: { tab: '3' } }"
-                  class="hs-text-btn-ghost biz-card-btn mt-auto inline-flex w-fit justify-center rounded-lg border border-[#3d59ff]/35 px-4 py-2 text-[#1a1a1a] no-underline transition hover:bg-black/[0.04] dark:border-white/30 dark:text-white dark:hover:bg-white/10"
-                >
-                  <span data-i18n="btn_detail">查看详情</span>
-                </RouterLink>
-              </div>
-            </article>
-            <article class="reveal reveal--scale card-bolt flex flex-col overflow-hidden rounded-2xl delay-200">
-              <div class="card-bolt-img-wrap h-32 shrink-0 overflow-hidden rounded-t-2xl sm:h-36">
-                <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=600&q=85" alt="" class="card-bolt-img h-full w-full object-cover" loading="lazy" />
-              </div>
-              <div class="card-bolt-body flex flex-1 flex-col items-start rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" data-i18n="biz_5">信息管理及商业智能方案</h3>
-                <p class="hs-text-body mt-1.5 line-clamp-3 text-[#666666] dark:text-zinc-400" data-i18n="biz_5_desc">数据治理与指标体系，报表与决策分析一站式支撑经营洞察。</p>
-                <RouterLink
-                  :to="{ name: 'business-solutions', query: { tab: '4' } }"
+                  :to="{ name: 'business-solutions', query: { tab: String(cat.tabIndex) } }"
                   class="hs-text-btn-ghost biz-card-btn mt-auto inline-flex w-fit justify-center rounded-lg border border-[#3d59ff]/35 px-4 py-2 text-[#1a1a1a] no-underline transition hover:bg-black/[0.04] dark:border-white/30 dark:text-white dark:hover:bg-white/10"
                 >
                   <span data-i18n="btn_detail">查看详情</span>
@@ -364,13 +326,44 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { DEFAULT_BANNERS, normalizeBanner, loadBanners } from "../cms/banners.js";
 import BannerNoticeBar from "../components/BannerNoticeBar.vue";
 import PartnerLogoHoverCard from "../components/PartnerLogoHoverCard.vue";
 import { cmsTick } from "../cms/cmsTick.js";
+import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
+import { I18N } from "../i18n.js";
 import { getNewsItems } from "../cms/news.js";
 import { PARTNER_LOGOS_HOME_PREVIEW } from "../cms/partnersPage.js";
+
+/** 与解决方案页五个 Tab 一致；数据来自 Sanity「解决方案页配置」中的简介 + 默认 i18n */
+const homeBusinessCategories = computed(() => {
+  cmsTick.value;
+  return resolveBusinessSolutionCategories();
+});
+
+const HOME_BIZ_STAGGER = ["", "delay-75", "delay-100", "delay-150", "delay-200"];
+
+function homeBizTitleI18n(cat) {
+  return `biz_${cat.tabIndex + 1}`;
+}
+
+function homeBizIntroI18n(cat) {
+  return `biz_${cat.tabIndex + 1}_desc`;
+}
+
+/** CMS 异步写入后补刷本区块 i18n（与全局 applyI18n 一致，仅作用在 #main-business 避免整页重扫） */
+function refreshMainBusinessI18n() {
+  const lang = typeof localStorage !== "undefined" ? localStorage.getItem("hisun_lang") || "zh" : "zh";
+  document.querySelectorAll("#main-business [data-i18n]").forEach((el) => {
+    const k = el.getAttribute("data-i18n");
+    if (!k) return;
+    const row = I18N[k];
+    if (row) el.textContent = row[lang] || row.zh;
+  });
+}
+
+watch(cmsTick, () => nextTick(() => refreshMainBusinessI18n()));
 
 /** 首页展示合作伙伴 Logo 预览（前 18 条）；全量在合作伙伴页 */
 const partnerLogos = PARTNER_LOGOS_HOME_PREVIEW;
@@ -549,6 +542,7 @@ onMounted(async () => {
     /* keep default */
   }
   await nextTick();
+  refreshMainBusinessI18n();
   resetBannerTimer();
 });
 
