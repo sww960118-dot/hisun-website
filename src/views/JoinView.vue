@@ -111,9 +111,13 @@
 import { computed, ref, watch } from "vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { UiSearchField, UiSelect } from "../components";
-import { JOIN_JOBS } from "../cms/joinPage.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getJoinJobs } from "../cms/joinPage.js";
 
-const jobs = JOIN_JOBS;
+const jobs = computed(() => {
+  cmsTick.value;
+  return getJoinJobs();
+});
 const keyword = ref("");
 const selectedType = ref("");
 const selectedDegree = ref("");
@@ -159,7 +163,7 @@ const locationFilterOptions = [
 ];
 
 const filteredJobs = computed(() =>
-  jobs.filter((job) => {
+  jobs.value.filter((job) => {
     const hitKeyword = !keyword.value || job.title.toLowerCase().includes(keyword.value.toLowerCase());
     const hitType = !selectedType.value || job.type === selectedType.value;
     const hitDegree = !selectedDegree.value || job.degree === selectedDegree.value;

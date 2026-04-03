@@ -91,7 +91,10 @@ export function portableTextToArticleSegments(blocks) {
     } else if (block._type === "embedImage") {
       const src = block.url;
       if (src) out.push({ kind: "image", src: String(src), alt: String(block.alt || "") });
-    } else if (typeof block.url === "string" && /^https?:\/\//i.test(block.url)) {
+    } else if (
+      typeof block.url === "string" &&
+      (/^https?:\/\//i.test(block.url) || /^data:image\//i.test(block.url))
+    ) {
       // 兜底：若 schema 与前端类型名不一致，仍尝试按外链图渲染
       const u = block.url.trim();
       if (/\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(u)) {

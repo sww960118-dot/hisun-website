@@ -167,32 +167,44 @@ import { useRoute } from "vue-router";
 import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
-import { NEWS_ITEMS } from "../cms/news.js";
-import { PARTNER_CASE_ARTICLES } from "../cms/partnersPage.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getNewsItems } from "../cms/news.js";
+import { getPartnerCaseArticles } from "../cms/partnersPage.js";
 
 const route = useRoute();
 
-const allCases = PARTNER_CASE_ARTICLES;
+const allCases = computed(() => {
+  cmsTick.value;
+  return getPartnerCaseArticles();
+});
+
+const newsCatalog = computed(() => {
+  cmsTick.value;
+  return getNewsItems();
+});
 
 const activeCase = computed(() => {
   const id = String(route.query.id ?? "");
-  return allCases.find((x) => x.id === id) ?? allCases[0];
+  const list = allCases.value;
+  return list.find((x) => x.id === id) ?? list[0];
 });
 
 const activeIndex = computed(() =>
-  allCases.findIndex((x) => x.id === activeCase.value?.id)
+  allCases.value.findIndex((x) => x.id === activeCase.value?.id)
 );
 
 const prevCase = computed(() => {
+  const list = allCases.value;
   const idx = activeIndex.value;
   if (idx <= 0) return null;
-  return allCases[idx - 1];
+  return list[idx - 1];
 });
 
 const nextCase = computed(() => {
+  const list = allCases.value;
   const idx = activeIndex.value;
-  if (idx < 0 || idx >= allCases.length - 1) return null;
-  return allCases[idx + 1];
+  if (idx < 0 || idx >= list.length - 1) return null;
+  return list[idx + 1];
 });
 
 const detailParagraphs = computed(() => {
@@ -222,11 +234,11 @@ function toDateValue(date) {
 }
 
 const hotArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
+  [...newsCatalog.value].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
 );
 
 const latestArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
+  [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
 );
 
 function normalizeText(s) {
@@ -257,7 +269,7 @@ const relatedNews = computed(() => {
   const c = activeCase.value;
   if (!c) return [];
   const source = `${c.title}${c.summary}${detailParagraphs.value.join("")}`;
-  const filtered = NEWS_ITEMS
+  const filtered = newsCatalog.value
     .map((n) => ({
       ...n,
       sim: overlapRatio(source, `${n.title}${n.desc}`),
@@ -266,7 +278,7 @@ const relatedNews = computed(() => {
     .sort((a, b) => b.sim - a.sim || toDateValue(b.date) - toDateValue(a.date))
     .slice(0, 6);
   if (filtered.length > 0) return filtered;
-  return [...NEWS_ITEMS].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 6);
+  return [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 6);
 });
 
 function formatViews(value) {

@@ -55,10 +55,15 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
-import { SUPPORT_SECTIONS } from "../cms/supportPage.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getSupportSections } from "../cms/supportPage.js";
 
-const sections = SUPPORT_SECTIONS;
+const sections = computed(() => {
+  cmsTick.value;
+  return getSupportSections();
+});
 const REVEAL_STAGGER = ["", "delay-75", "delay-100", "delay-150", "delay-200", "delay-300"];
 
 function supportAnchor(sectionId) {

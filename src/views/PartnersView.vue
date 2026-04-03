@@ -206,17 +206,22 @@ import PartnerLogoHoverCard from "../components/PartnerLogoHoverCard.vue";
 import {
   PARTNER_LOGO_ITEMS,
   PARTNER_SECTOR_TABS,
-  PARTNER_FEATURED_CASE,
-  PARTNER_CASE_CARDS,
   PARTNERS_CONTACT_EMAIL,
+  getPartnerCaseArticles,
 } from "../cms/partnersPage.js";
+import { cmsTick } from "../cms/cmsTick.js";
 
 const route = useRoute();
 const router = useRouter();
 
 const sectorTabs = PARTNER_SECTOR_TABS;
-const featured = PARTNER_FEATURED_CASE;
-const caseCards = PARTNER_CASE_CARDS;
+
+const caseArticles = computed(() => {
+  cmsTick.value;
+  return getPartnerCaseArticles();
+});
+const featured = computed(() => caseArticles.value[0]);
+const caseCards = computed(() => caseArticles.value.slice(1));
 
 const allowedSectors = new Set(sectorTabs.map((t) => t.value));
 

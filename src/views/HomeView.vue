@@ -368,8 +368,9 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { DEFAULT_BANNERS, normalizeBanner, loadBanners } from "../cms/banners.js";
 import BannerNoticeBar from "../components/BannerNoticeBar.vue";
 import PartnerLogoHoverCard from "../components/PartnerLogoHoverCard.vue";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getNewsItems } from "../cms/news.js";
 import { PARTNER_LOGOS_HOME_PREVIEW } from "../cms/partnersPage.js";
-import { NEWS_ITEMS } from "../cms/news.js";
 
 /** 首页展示合作伙伴 Logo 预览（前 18 条）；全量在合作伙伴页 */
 const partnerLogos = PARTNER_LOGOS_HOME_PREVIEW;
@@ -377,11 +378,12 @@ const partnerLogos = PARTNER_LOGOS_HOME_PREVIEW;
 /** 整页打开新闻列表（完整文档加载），避免长首页上 SPA 跳转产生「从下往上滚」的观感 */
 const newsListMoreHref = `${(import.meta.env.BASE_URL || "/").replace(/\/$/, "")}/news?from=home`;
 
-const homeNewsItems = computed(() =>
-  [...NEWS_ITEMS]
+const homeNewsItems = computed(() => {
+  cmsTick.value;
+  return getNewsItems()
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 3)
-);
+    .slice(0, 3);
+});
 
 const BANNER_AUTO_MS = 3000;
 

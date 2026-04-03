@@ -39,4 +39,7 @@ function resolveNewsRaw() {
   return DEFAULT_NEWS_ITEMS;
 }
 
-export const NEWS_ITEMS = resolveNewsRaw().map(normalizeNewsItem);
+/** 运行时从 window.HISUN_CMS 解析，避免模块初始化早于 prefetch 时永远停留在内置演示数据 */
+export function getNewsItems() {
+  return resolveNewsRaw().map(normalizeNewsItem);
+}

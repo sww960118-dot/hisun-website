@@ -4,7 +4,9 @@
  * - 仅当 items 为非空数组时才覆盖内置默认数据
  */
 import { defaultHisunCms } from "./config.js";
+import { bumpCmsTick } from "./cmsTick.js";
 import {
+  fetchSanityBusinessSolutionsConfig,
   fetchSanityJobPostings,
   fetchSanityNewsItems,
   fetchSanityPartnerCases,
@@ -26,17 +28,13 @@ async function fetchJson(name) {
   }
 }
 
-export async function prefetchCmsData() {
-  if (typeof window === "undefined") return;
-
-  window.HISUN_CMS = { ...defaultHisunCms, ...window.HISUN_CMS };
-
-  // 1) 先尝试从 Sanity 拉取（成功则优先使用）
-  const [sanityNews, sanityCases, sanitySupport, sanityJobs] = await Promise.all([
+async function applySanityToWindow() {
+  const [sanityNews, sanityCases, sanitySupport, sanityJobs, sanityBizSolutions] = await Promise.all([
     fetchSanityNewsItems(),
     fetchSanityPartnerCases(),
     fetchSanitySupportMaintenance(),
     fetchSanityJobPostings(),
+    fetchSanityBusinessSolutionsConfig(),
   ]);
   if (Array.isArray(sanityNews) && sanityNews.length > 0) {
     window.HISUN_CMS.newsItems = sanityNews;
@@ -51,15 +49,29 @@ export async function prefetchCmsData() {
   if (Array.isArray(sanityJobs) && sanityJobs.length > 0) {
     window.HISUN_CMS.joinJobs = sanityJobs;
   }
+  if (sanityBizSolutions && typeof sanityBizSolutions === "object") {
+    window.HISUN_CMS.businessSolutionsSanity = sanityBizSolutions;
+  }
+}
 
-  // 2) 如果 Sanity 没有数据，再回退到静态 JSON
+export async function prefetchCmsData() {
+  if (typeof window === "undefined") return;
+
+  window.HISUN_CMS = { ...defaultHisunCms, ...window.HISUN_CMS };
+
+  await applySanityToWindow();
+  bumpCmsTick();
+
+  // 如果 Sanity 没有数据，再回退到静态 JSON
   const [newsWrap, casesWrap] = await Promise.all([fetchJson("news"), fetchJson("partner-cases")]);
 
   if (!window.HISUN_CMS.newsItems && newsWrap && Array.isArray(newsWrap.items) && newsWrap.items.length > 0) {
     window.HISUN_CMS.newsItems = newsWrap.items;
+    bumpCmsTick();
   }
 
   if (!window.HISUN_CMS.partnerCases && casesWrap && Array.isArray(casesWrap.items) && casesWrap.items.length > 0) {
     window.HISUN_CMS.partnerCases = casesWrap.items;
+    bumpCmsTick();
   }
 }

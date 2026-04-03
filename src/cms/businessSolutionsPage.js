@@ -81,12 +81,72 @@ export function resolveSolutionDetails() {
 
 export const SOLUTION_DETAILS = resolveSolutionDetails();
 
+function truncateSolCardDesc(text, max = 120) {
+  const t = String(text || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!t) return SOLUTION_MODULE_CARD_DESC;
+  if (t.length <= max) return t;
+  return `${t.slice(0, max)}…`;
+}
+
+/** 与 Sanity「解决方案页配置」五个 object 字段顺序一致 */
+const SANITY_SOLUTION_TAB_KEYS = [
+  "businessProcessing",
+  "channelService",
+  "tooling",
+  "techPlatform",
+  "informationBi",
+];
+
+/**
+ * 将 Sanity 单例文档与内置默认 Tab 合并：有简介则覆盖；有服务支持引用则替换该 Tab 卡片列表。
+ */
+export function mergeBusinessSolutionsSanityIntoDefaults(doc) {
+  const defaults = buildBusinessSolutionCategories();
+  if (!doc || typeof doc !== "object") return defaults;
+  return defaults.map((def, i) => {
+    const key = SANITY_SOLUTION_TAB_KEYS[i];
+    const block = doc[key];
+    if (!block || typeof block !== "object") return { ...def };
+    const introRaw = block.introduction;
+    const introduction =
+      introRaw != null && String(introRaw).trim() ? String(introRaw).trim() : "";
+    const refs = Array.isArray(block.refs) ? block.refs.filter((r) => r && r._id) : [];
+    const modules =
+      refs.length > 0
+        ? refs.map((row, idx) => {
+            const excerptTrim = String(row.excerpt || "").trim();
+            const desc = excerptTrim || truncateSolCardDesc(row.bodyText);
+            return {
+              id: String(row._id),
+              titleKey: def.modules[idx]?.titleKey || `biz_p${i + 1}_f${idx + 1}`,
+              title: String(row.title || "").trim(),
+              desc,
+              detailKind: "support",
+              supportId: String(row._id),
+            };
+          })
+        : def.modules.map((m) => ({ ...m, detailKind: "solution" }));
+    return {
+      ...def,
+      ...(introduction ? { introduction } : {}),
+      modules,
+    };
+  });
+}
+
 function normalizeCategoryModule(m, pid, index) {
   const n = String(pid || "p1").replace(/^p/, "") || "1";
+  const detailKind = m.detailKind === "support" ? "support" : "solution";
   return {
     id: String(m.id || `${pid}-f${index + 1}`),
     titleKey: m.titleKey || `biz_p${n}_f${index + 1}`,
+    title: String(m.title || "").trim(),
     desc: String(m.desc || SOLUTION_MODULE_CARD_DESC),
+    detailKind,
+    supportId: m.supportId ? String(m.supportId) : "",
   };
 }
 
@@ -94,12 +154,15 @@ function normalizeCategory(c, idx) {
   const pid = c.id || `p${idx + 1}`;
   const tabIndex = Number(c.tabIndex) >= 0 ? Number(c.tabIndex) : idx;
   const modules = Array.isArray(c.modules) ? c.modules.map((m, i) => normalizeCategoryModule(m, pid, i)) : [];
+  const introRaw = c.introduction;
+  const introduction = introRaw != null && String(introRaw).trim() ? String(introRaw).trim() : "";
   return {
     id: pid,
     tabIndex,
     titleKey: c.titleKey || `biz_p${tabIndex + 1}_title`,
     introKey: c.introKey || `biz_p${tabIndex + 1}_desc`,
     image: c.image || BUSINESS_TAB_IMAGES[tabIndex] || BUSINESS_TAB_IMAGES[0],
+    ...(introduction ? { introduction } : {}),
     modules,
   };
 }
@@ -131,9 +194,19 @@ export function buildBusinessSolutionCategories() {
 }
 
 export function resolveBusinessSolutionCategories() {
-  const cms = typeof window !== "undefined" ? window.HISUN_CMS?.businessSolutionCategories : null;
-  if (Array.isArray(cms) && cms.length) return cms.map((c, i) => normalizeCategory(c, i));
-  return buildBusinessSolutionCategories();
+  if (typeof window === "undefined") {
+    return buildBusinessSolutionCategories().map((c, i) => normalizeCategory(c, i));
+  }
+  const sanityDoc = window.HISUN_CMS?.businessSolutionsSanity;
+  if (sanityDoc && typeof sanityDoc === "object") {
+    const merged = mergeBusinessSolutionsSanityIntoDefaults(sanityDoc);
+    return merged.map((c, i) => normalizeCategory(c, i));
+  }
+  const legacy = window.HISUN_CMS?.businessSolutionCategories;
+  if (Array.isArray(legacy) && legacy.length) {
+    return legacy.map((c, i) => normalizeCategory(c, i));
+  }
+  return buildBusinessSolutionCategories().map((c, i) => normalizeCategory(c, i));
 }
 
 export const BUSINESS_SOLUTION_CATEGORIES = resolveBusinessSolutionCategories();

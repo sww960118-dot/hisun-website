@@ -363,7 +363,8 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { PARTNER_LOGOS } from "../cms/partners.js";
 import { BUSINESS_TAB_IMAGES, BUSINESS_FEATURE_COUNTS } from "../cms/businessPage.js";
-import { NEWS_ITEMS } from "../cms/news.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getNewsItems } from "../cms/news.js";
 
 const TAB_COUNT = 5;
 const tabLabelKeys = ["biz_1", "biz_2", "biz_3", "biz_4", "biz_5"];
@@ -379,10 +380,13 @@ const partnerLogos = PARTNER_LOGOS;
 const hotRowStart = ref(0);
 const HOT_ROW_SIZE = 4;
 
-const hotNewsCards = NEWS_ITEMS;
+const hotNewsCards = computed(() => {
+  cmsTick.value;
+  return getNewsItems();
+});
 
 const hotFilteredArticles = computed(() =>
-  [...hotNewsCards].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  [...hotNewsCards.value].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 );
 
 const hotRowArticles = computed(() => {

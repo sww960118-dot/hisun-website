@@ -86,7 +86,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
-import { NEWS_ITEMS } from "../cms/news.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getNewsItems } from "../cms/news.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -118,8 +119,10 @@ const listCrumbs = computed(() => {
 });
 
 const filteredArticles = computed(() => {
+  cmsTick.value;
+  const items = getNewsItems();
   const base =
-    activeCategory.value === "all" ? NEWS_ITEMS : NEWS_ITEMS.filter((item) => item.category === activeCategory.value);
+    activeCategory.value === "all" ? items : items.filter((item) => item.category === activeCategory.value);
   return [...base].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 });
 

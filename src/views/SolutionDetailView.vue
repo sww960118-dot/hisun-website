@@ -170,10 +170,16 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
-import { NEWS_ITEMS } from "../cms/news.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getNewsItems } from "../cms/news.js";
 import { SOLUTION_DETAILS } from "../cms/businessSolutionsPage.js";
 
 const route = useRoute();
+
+const newsCatalog = computed(() => {
+  cmsTick.value;
+  return getNewsItems();
+});
 
 const activeSolution = computed(() => {
   const id = String(route.query.id ?? "");
@@ -222,11 +228,11 @@ function toDateValue(date) {
 }
 
 const hotArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
+  [...newsCatalog.value].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
 );
 
 const latestArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
+  [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
 );
 
 function normalizeText(s) {
@@ -257,15 +263,16 @@ const relatedNews = computed(() => {
   const s = activeSolution.value;
   if (!s) return [];
   const source = `${s.title}${s.summary}${detailParagraphs.value.join("")}`;
-  const filtered = NEWS_ITEMS.map((n) => ({
-    ...n,
-    sim: overlapRatio(source, `${n.title}${n.desc}`),
-  }))
+  const filtered = newsCatalog.value
+    .map((n) => ({
+      ...n,
+      sim: overlapRatio(source, `${n.title}${n.desc}`),
+    }))
     .filter((n) => n.sim >= 0.22)
     .sort((a, b) => b.sim - a.sim || toDateValue(b.date) - toDateValue(a.date))
     .slice(0, 6);
   if (filtered.length > 0) return filtered;
-  return [...NEWS_ITEMS].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 6);
+  return [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 6);
 });
 
 function formatViews(value) {

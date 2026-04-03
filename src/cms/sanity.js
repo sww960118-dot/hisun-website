@@ -12,7 +12,11 @@ function getSanityConfig() {
   };
 }
 
-async function sanityQuery(query, params = {}) {
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function sanityQuery(query, params = {}, attempt = 0) {
   const { projectId, dataset, apiVersion, readToken } = getSanityConfig();
   if (!projectId || !dataset) return null;
 
@@ -25,11 +29,27 @@ async function sanityQuery(query, params = {}) {
   try {
     const headers = { Accept: "application/json" };
     if (readToken) headers.Authorization = `Bearer ${readToken}`;
-    const res = await fetch(url.toString(), { headers });
-    if (!res.ok) return null;
+    const res = await fetch(url.toString(), { headers, cache: "no-store" });
+    if (!res.ok) {
+      if (attempt < 2 && (res.status >= 500 || res.status === 429)) {
+        await sleep(400 * (attempt + 1));
+        return sanityQuery(query, params, attempt + 1);
+      }
+      if (import.meta.env.DEV) {
+        console.warn("[Sanity] query failed", res.status, url.pathname);
+      }
+      return null;
+    }
     const data = await res.json();
     return data?.result ?? null;
-  } catch {
+  } catch (e) {
+    if (attempt < 2) {
+      await sleep(400 * (attempt + 1));
+      return sanityQuery(query, params, attempt + 1);
+    }
+    if (import.meta.env.DEV) {
+      console.warn("[Sanity] query error", e);
+    }
     return null;
   }
 }
@@ -279,6 +299,41 @@ export async function fetchSanityJobPostings({ limit = 100 } = {}) {
       ? row.requirements.map((x) => String(x).trim()).filter(Boolean)
       : [],
   }));
+}
+
+const BUSINESS_SOLUTION_TAB_FIELDS = [
+  "businessProcessing",
+  "channelService",
+  "tooling",
+  "techPlatform",
+  "informationBi",
+];
+
+function groqBusinessSolutionsProjection() {
+  return BUSINESS_SOLUTION_TAB_FIELDS.map(
+    (key) =>
+      `${key} {
+        introduction,
+        "refs": supportItems[]->{
+          _id,
+          "title": coalesce(title, ""),
+          "excerpt": coalesce(excerpt, ""),
+          "bodyText": pt::text(content)
+        }
+      }`,
+  ).join(",\n");
+}
+
+/**
+ * 单例「解决方案页配置」：五个 Tab 的简介 + 服务支持引用顺序。
+ */
+export async function fetchSanityBusinessSolutionsConfig() {
+  const q = `*[_id == "businessSolutionsConfig"][0]{
+    ${groqBusinessSolutionsProjection()}
+  }`;
+  const res = await sanityQuery(q);
+  if (!res || typeof res !== "object") return null;
+  return res;
 }
 
 export async function fetchSanityPartnerCases({ limit = 50 } = {}) {

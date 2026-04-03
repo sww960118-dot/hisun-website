@@ -130,4 +130,6 @@ function resolveJobs() {
   return raw.map(normalizeJob);
 }
 
-export const JOIN_JOBS = resolveJobs();
+export function getJoinJobs() {
+  return resolveJobs();
+}

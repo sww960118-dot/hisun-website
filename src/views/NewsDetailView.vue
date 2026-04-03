@@ -161,14 +161,20 @@ import { useRoute } from "vue-router";
 import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
-import { NEWS_ITEMS } from "../cms/news.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getNewsItems } from "../cms/news.js";
 
 const route = useRoute();
+
+const newsCatalog = computed(() => {
+  cmsTick.value;
+  return getNewsItems();
+});
 
 const article = computed(() => {
   const id = String(route.query.id ?? "");
   if (!id) return null;
-  return NEWS_ITEMS.find((n) => n.id === id) ?? null;
+  return newsCatalog.value.find((n) => n.id === id) ?? null;
 });
 
 const articleSource = computed(() => article.value?.source ?? "高阳金信官网");
@@ -272,18 +278,20 @@ function detailQueryFor(id) {
   return q;
 }
 
-const articleIndex = computed(() => NEWS_ITEMS.findIndex((n) => n.id === article.value?.id));
+const articleIndex = computed(() => newsCatalog.value.findIndex((n) => n.id === article.value?.id));
 
 const prevArticle = computed(() => {
+  const list = newsCatalog.value;
   const i = articleIndex.value;
   if (i <= 0) return null;
-  return NEWS_ITEMS[i - 1];
+  return list[i - 1];
 });
 
 const nextArticle = computed(() => {
+  const list = newsCatalog.value;
   const i = articleIndex.value;
-  if (i < 0 || i >= NEWS_ITEMS.length - 1) return null;
-  return NEWS_ITEMS[i + 1];
+  if (i < 0 || i >= list.length - 1) return null;
+  return list[i + 1];
 });
 
 function toDateValue(date) {
@@ -291,11 +299,11 @@ function toDateValue(date) {
 }
 
 const hotArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
+  [...newsCatalog.value].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
 );
 
 const latestArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
+  [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
 );
 
 function normalizeText(s) {
@@ -326,7 +334,9 @@ const relatedNews = computed(() => {
   const a = article.value;
   if (!a) return [];
   const source = `${a.title}${a.desc}`;
-  const filtered = NEWS_ITEMS.filter((n) => n.id !== a.id)
+  const catalog = newsCatalog.value;
+  const filtered = catalog
+    .filter((n) => n.id !== a.id)
     .map((n) => ({
       ...n,
       sim: overlapRatio(source, `${n.title}${n.desc}`),
@@ -335,7 +345,8 @@ const relatedNews = computed(() => {
     .sort((a, b) => b.sim - a.sim || toDateValue(b.date) - toDateValue(a.date))
     .slice(0, 6);
   if (filtered.length > 0) return filtered;
-  return NEWS_ITEMS.filter((n) => n.id !== a.id)
+  return catalog
+    .filter((n) => n.id !== a.id)
     .sort((a, b) => toDateValue(b.date) - toDateValue(a.date))
     .slice(0, 6);
 });

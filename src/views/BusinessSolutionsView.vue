@@ -52,7 +52,17 @@
           <header class="reveal mb-10 text-left">
             <h2 class="hs-text-page-h2 text-[#111827] dark:text-white" :data-i18n="currentCategory.titleKey"></h2>
             <div class="hs-heading-rule mt-3" aria-hidden="true"></div>
-            <p class="hs-text-body mt-5 max-w-none text-[15px] leading-[1.85] text-[#374151] dark:text-zinc-400" :data-i18n="currentCategory.introKey"></p>
+            <p
+              v-if="currentCategory.introduction"
+              class="hs-text-body mt-5 max-w-none whitespace-pre-wrap text-[15px] leading-[1.85] text-[#374151] dark:text-zinc-400"
+            >
+              {{ currentCategory.introduction }}
+            </p>
+            <p
+              v-else
+              class="hs-text-body mt-5 max-w-none text-[15px] leading-[1.85] text-[#374151] dark:text-zinc-400"
+              :data-i18n="currentCategory.introKey"
+            ></p>
           </header>
 
           <div class="support-block">
@@ -64,13 +74,14 @@
                 :class="revealStaggerClass(idx)"
               >
                 <h3 class="support-card__title text-[24px] font-semibold leading-[1.22] text-[#1f2937] dark:text-white">
-                  <span :data-i18n="item.titleKey"></span>
+                  <template v-if="item.title">{{ item.title }}</template>
+                  <span v-else :data-i18n="item.titleKey"></span>
                 </h3>
                 <p class="support-card__desc text-[14px] leading-7 text-zinc-600 dark:text-zinc-300">
                   {{ item.desc }}
                 </p>
                 <RouterLink
-                  :to="{ name: 'solution-detail', query: { id: item.id, tab: String(activeTab) } }"
+                  :to="detailRoute(item)"
                   class="support-detail-btn mt-5 inline-flex h-[42px] w-fit items-center justify-center rounded-[8px] border border-[#3d59ff] px-4 text-[14px] font-semibold text-[#3d59ff] no-underline"
                 >
                   <span class="support-detail-btn__label">了解详情</span>
@@ -88,23 +99,41 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
-import { BUSINESS_SOLUTION_CATEGORIES } from "../cms/businessSolutionsPage.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
 
 const route = useRoute();
-const categories = BUSINESS_SOLUTION_CATEGORIES;
+const categories = computed(() => {
+  cmsTick.value;
+  return resolveBusinessSolutionCategories();
+});
 const tabLabelKeys = ["biz_1", "biz_2", "biz_3", "biz_4", "biz_5"];
 const REVEAL_STAGGER = ["", "delay-75", "delay-100", "delay-150", "delay-200", "delay-300"];
 
 const activeTab = computed(() => {
   const n = parseInt(String(route.query.tab ?? "0"), 10);
-  if (Number.isNaN(n) || n < 0 || n >= categories.length) return 0;
+  const list = categories.value;
+  if (Number.isNaN(n) || n < 0 || n >= list.length) return 0;
   return n;
 });
 
-const currentCategory = computed(() => categories.find((c) => c.tabIndex === activeTab.value) ?? categories[0] ?? null);
+const currentCategory = computed(
+  () => categories.value.find((c) => c.tabIndex === activeTab.value) ?? categories.value[0] ?? null,
+);
 
 function revealStaggerClass(index) {
   return REVEAL_STAGGER[index % REVEAL_STAGGER.length] || "";
+}
+
+function detailRoute(item) {
+  const tab = String(activeTab.value);
+  if (item.detailKind === "support" && item.supportId) {
+    return {
+      name: "service-detail",
+      query: { id: item.supportId, from: "business-solutions", tab },
+    };
+  }
+  return { name: "solution-detail", query: { id: item.id, tab } };
 }
 </script>
 

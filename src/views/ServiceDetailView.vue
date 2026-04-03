@@ -162,10 +162,25 @@ import { useRoute } from "vue-router";
 import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
-import { NEWS_ITEMS } from "../cms/news.js";
-import { SUPPORT_DETAIL_ITEMS } from "../cms/supportPage.js";
+import { cmsTick } from "../cms/cmsTick.js";
+import { getNewsItems } from "../cms/news.js";
+import { getSupportDetailItems } from "../cms/supportPage.js";
+import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
 
 const route = useRoute();
+
+const newsCatalog = computed(() => {
+  cmsTick.value;
+  return getNewsItems();
+});
+
+const supportDetailList = computed(() => {
+  cmsTick.value;
+  return getSupportDetailItems();
+});
+
+const fromBusinessSolutions = computed(() => String(route.query.from ?? "") === "business-solutions");
+const businessSolutionsTab = computed(() => String(route.query.tab ?? "0"));
 
 function supportSectionHash(sectionId) {
   const sid = String(sectionId || "consult");
@@ -178,7 +193,7 @@ function supportSectionHash(sectionId) {
 const detail = computed(() => {
   const id = String(route.query.id ?? "");
   if (!id) return null;
-  return SUPPORT_DETAIL_ITEMS.find((x) => x.id === id) ?? null;
+  return supportDetailList.value.find((x) => x.id === id) ?? null;
 });
 
 const detailLead = computed(() => String(detail.value?.desc || "").trim());
@@ -196,6 +211,17 @@ const bodySegments = computed(() => {
 });
 
 const detailCrumbs = computed(() => {
+  if (fromBusinessSolutions.value) {
+    return [
+      { to: "/", i18nKey: "crumb_home" },
+      { to: { name: "business", hash: "#biz-solutions" }, i18nKey: "nav_biz" },
+      {
+        to: { name: "business-solutions", query: { tab: businessSolutionsTab.value } },
+        i18nKey: "biz_page_banner_title",
+      },
+      { i18nKey: "support_item_detail_crumb" },
+    ];
+  }
   const sid = detail.value?.sectionId || "consult";
   return [
     { to: "/", i18nKey: "crumb_home" },
@@ -204,19 +230,45 @@ const detailCrumbs = computed(() => {
   ];
 });
 
-const backToSupport = computed(() => ({
-  name: "support",
-  hash: supportSectionHash(detail.value?.sectionId || "consult"),
-}));
+const backToSupport = computed(() => {
+  if (fromBusinessSolutions.value) {
+    return { name: "business-solutions", query: { tab: businessSolutionsTab.value } };
+  }
+  return {
+    name: "support",
+    hash: supportSectionHash(detail.value?.sectionId || "consult"),
+  };
+});
 
 function serviceDetailQuery(id) {
+  if (fromBusinessSolutions.value) {
+    return {
+      name: "service-detail",
+      query: { id, from: "business-solutions", tab: businessSolutionsTab.value },
+    };
+  }
   return { name: "service-detail", query: { id, from: "support" } };
 }
+
+const businessSolutionsSupportOrder = computed(() => {
+  if (!fromBusinessSolutions.value) return [];
+  cmsTick.value;
+  const tab = parseInt(businessSolutionsTab.value, 10);
+  const cats = resolveBusinessSolutionCategories();
+  const cat = cats.find((c) => c.tabIndex === tab) ?? cats[0];
+  if (!cat) return [];
+  return cat.modules.filter((m) => m.detailKind === "support" && m.supportId).map((m) => m.supportId);
+});
 
 const sectionSiblings = computed(() => {
   const d = detail.value;
   if (!d) return [];
-  return SUPPORT_DETAIL_ITEMS.filter((x) => x.sectionId === d.sectionId);
+  if (fromBusinessSolutions.value && businessSolutionsSupportOrder.value.length) {
+    return businessSolutionsSupportOrder.value
+      .map((id) => supportDetailList.value.find((x) => x.id === id))
+      .filter(Boolean);
+  }
+  return supportDetailList.value.filter((x) => x.sectionId === d.sectionId);
 });
 
 const siblingIndex = computed(() => sectionSiblings.value.findIndex((x) => x.id === detail.value?.id));
@@ -239,11 +291,11 @@ function toDateValue(date) {
 }
 
 const hotArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
+  [...newsCatalog.value].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
 );
 
 const latestArticles = computed(() =>
-  [...NEWS_ITEMS].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
+  [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
 );
 
 function normalizeText(s) {
@@ -274,15 +326,16 @@ const relatedNews = computed(() => {
   const d = detail.value;
   if (!d) return [];
   const source = `${d.title}${d.desc}${detailParagraphs.value.join("")}`;
-  const filtered = NEWS_ITEMS.map((n) => ({
-    ...n,
-    sim: overlapRatio(source, `${n.title}${n.desc}`),
-  }))
+  const filtered = newsCatalog.value
+    .map((n) => ({
+      ...n,
+      sim: overlapRatio(source, `${n.title}${n.desc}`),
+    }))
     .filter((n) => n.sim >= 0.22)
     .sort((a, b) => b.sim - a.sim || toDateValue(b.date) - toDateValue(a.date))
     .slice(0, 6);
   if (filtered.length > 0) return filtered;
-  return [...NEWS_ITEMS].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 6);
+  return [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 6);
 });
 
 function formatViews(value) {

@@ -156,9 +156,7 @@ function resolvePartnerCases() {
   return raw.map(normalizePartnerCase);
 }
 
-/** 典型案例主数据源（后续可由后端注入 window.HISUN_CMS.partnerCases 维护） */
-export const PARTNER_CASE_ARTICLES = resolvePartnerCases();
-/** 首条作为头条宽卡 */
-export const PARTNER_FEATURED_CASE = PARTNER_CASE_ARTICLES[0];
-/** 其余作为列表卡片 */
-export const PARTNER_CASE_CARDS = PARTNER_CASE_ARTICLES.slice(1);
+/** 典型案例主数据源（可由 window.HISUN_CMS.partnerCases / Sanity 覆盖） */
+export function getPartnerCaseArticles() {
+  return resolvePartnerCases();
+}

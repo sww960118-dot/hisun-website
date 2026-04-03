@@ -60,7 +60,10 @@ function resolveSupportSections() {
   return raw.map(normalizeSection);
 }
 
-export const SUPPORT_SECTIONS = resolveSupportSections();
+/** 运行时解析，与 prefetch 顺序无关 */
+export function getSupportSections() {
+  return resolveSupportSections();
+}
 
 const SUPPORT_DETAIL_FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
@@ -123,8 +126,10 @@ function normalizeSupportDetailRecord(x) {
 function resolveSupportDetailItems() {
   const cms = typeof window !== "undefined" ? window.HISUN_CMS?.supportDetails : null;
   if (Array.isArray(cms) && cms.length) return cms.map(normalizeSupportDetailRecord);
-  return buildSupportDetailItems(SUPPORT_SECTIONS);
+  return buildSupportDetailItems(getSupportSections());
 }
 
 /** 服务支持「了解详情」页数据源，可由 window.HISUN_CMS.supportDetails 覆盖 */
-export const SUPPORT_DETAIL_ITEMS = resolveSupportDetailItems();
+export function getSupportDetailItems() {
+  return resolveSupportDetailItems();
+}
