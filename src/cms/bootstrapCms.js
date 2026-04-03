@@ -29,13 +29,20 @@ async function fetchJson(name) {
 }
 
 async function applySanityToWindow() {
-  const [sanityNews, sanityCases, sanitySupport, sanityJobs, sanityBizSolutions] = await Promise.all([
+  const settled = await Promise.allSettled([
     fetchSanityNewsItems(),
     fetchSanityPartnerCases(),
     fetchSanitySupportMaintenance(),
     fetchSanityJobPostings(),
     fetchSanityBusinessSolutionsConfig(),
   ]);
+  const val = (i) => (settled[i]?.status === "fulfilled" ? settled[i].value : null);
+  const sanityNews = val(0);
+  const sanityCases = val(1);
+  const sanitySupport = val(2);
+  const sanityJobs = val(3);
+  const sanityBizSolutions = val(4);
+
   if (Array.isArray(sanityNews) && sanityNews.length > 0) {
     window.HISUN_CMS.newsItems = sanityNews;
   }

@@ -8,7 +8,11 @@ if (typeof history !== "undefined" && "scrollRestoration" in history) {
 
 async function start() {
   initCmsWindowSync();
-  prefetchCmsData().catch(() => {});
+  try {
+    await prefetchCmsData();
+  } catch {
+    /* 拉取失败时仍用内置默认数据，保证首页可渲染 */
+  }
   await import("./i18n.js");
   const { createApp } = await import("vue");
   const App = (await import("./App.vue")).default;

@@ -266,22 +266,26 @@
             </div>
             <div class="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
               <RouterLink
-                v-for="(item, idx) in homeNewsItems"
-                :key="item.id"
+                v-for="(item, nIdx) in homeNewsItems"
+                :key="String(item.id || `home-news-${nIdx}`)"
                 :to="{ name: 'news-detail', query: { id: item.id, from: 'home_card' } }"
-                class="group reveal reveal--from-bottom card-bolt flex flex-col overflow-hidden rounded-2xl no-underline text-inherit"
-                :class="idx === 1 ? 'delay-75' : idx === 2 ? 'delay-100' : ''"
+                class="group card-bolt flex flex-col overflow-hidden rounded-2xl no-underline text-inherit"
               >
                 <div class="card-bolt-img-wrap h-44 shrink-0 overflow-hidden rounded-t-2xl">
                   <img :src="item.image" alt="" class="card-bolt-img h-full w-full object-cover" loading="lazy" />
                 </div>
-                <div class="card-bolt-body relative flex flex-1 flex-col justify-center items-start rounded-b-2xl border-t border-zinc-100/90 pl-4 pr-20 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                  <h3 class="hs-text-card-title text-[#0f172a] dark:text-white">{{ item.title }}</h3>
-                  <p class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400">{{ item.desc }}</p>
-                  <time class="mt-2 text-[13px] text-zinc-400">{{ item.date }}</time>
-                  <div class="news-arrow-liquid group-hover:!text-white absolute right-6 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border transition-transform duration-200" aria-hidden="true">
-                    <svg class="icon-tone h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <div class="card-bolt-body flex flex-1 flex-col rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
+                  <h3 class="hs-text-card-title w-full text-[#0f172a] dark:text-white">{{ item.title }}</h3>
+                  <div class="mt-1.5 flex min-w-0 items-center gap-3">
+                    <p class="hs-text-body min-w-0 flex-1 line-clamp-2 text-[#666666] dark:text-zinc-400">{{ item.desc }}</p>
+                    <div
+                      class="news-arrow-liquid group-hover:!text-white inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-transform duration-200"
+                      aria-hidden="true"
+                    >
+                      <svg class="icon-tone h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
                   </div>
+                  <time class="mt-2 text-[13px] text-zinc-400">{{ item.date }}</time>
                 </div>
               </RouterLink>
             </div>
@@ -377,9 +381,13 @@ const newsListMoreHref = `${(import.meta.env.BASE_URL || "/").replace(/\/$/, "")
 
 const homeNewsItems = computed(() => {
   cmsTick.value;
-  return getNewsItems()
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 3);
+  const list = getNewsItems();
+  const sorted = [...list].sort((a, b) => {
+    const ta = new Date(a.date).getTime();
+    const tb = new Date(b.date).getTime();
+    return (Number.isFinite(tb) ? tb : 0) - (Number.isFinite(ta) ? ta : 0);
+  });
+  return sorted.slice(0, 3);
 });
 
 const BANNER_AUTO_MS = 3000;

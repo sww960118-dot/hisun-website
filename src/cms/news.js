@@ -2,10 +2,10 @@ import { DEFAULT_NEWS_ITEMS } from "./news.defaults.js";
 
 const NEWS_CATEGORIES = new Set(["notice", "headline", "staff"]);
 
-/** 列表/详情无封面且无正文图时的占位（public/img/news-placeholder.png） */
+/** 列表/详情无封面且无正文图时的占位（须存在于 public） */
 export function newsPlaceholderImageUrl() {
   const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
-  return `${base}img/news-placeholder.png`.replace(/([^:])\/{2,}/g, "$1/");
+  return `${base}img/case-default-cover.svg`.replace(/([^:])\/{2,}/g, "$1/");
 }
 
 function normalizeNewsItem(item, index) {
@@ -41,5 +41,8 @@ function resolveNewsRaw() {
 
 /** 运行时从 window.HISUN_CMS 解析，避免模块初始化早于 prefetch 时永远停留在内置演示数据 */
 export function getNewsItems() {
-  return resolveNewsRaw().map(normalizeNewsItem);
+  const raw = resolveNewsRaw();
+  const source = Array.isArray(raw) && raw.length > 0 ? raw : DEFAULT_NEWS_ITEMS;
+  const mapped = source.map(normalizeNewsItem);
+  return mapped.length > 0 ? mapped : DEFAULT_NEWS_ITEMS.map(normalizeNewsItem);
 }
