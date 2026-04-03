@@ -275,9 +275,9 @@
                   <img :src="item.image" alt="" class="card-bolt-img h-full w-full object-cover" loading="lazy" />
                 </div>
                 <div class="card-bolt-body flex flex-1 flex-col rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                  <h3 class="hs-text-card-title w-full text-[#0f172a] dark:text-white">{{ item.title }}</h3>
+                  <h3 class="hs-text-card-title w-full text-[#0f172a] dark:text-white">{{ newsTitleForLang(item, lang) }}</h3>
                   <div class="mt-1.5 flex min-w-0 items-center gap-3">
-                    <p class="hs-text-body min-w-0 flex-1 line-clamp-2 text-[#666666] dark:text-zinc-400">{{ item.desc }}</p>
+                    <p class="hs-text-body min-w-0 flex-1 line-clamp-2 text-[#666666] dark:text-zinc-400">{{ newsDescForLang(item, lang) }}</p>
                     <div
                       class="news-arrow-liquid group-hover:!text-white inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-transform duration-200"
                       aria-hidden="true"
@@ -334,15 +334,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
+import { ref, computed, inject, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { DEFAULT_BANNERS, normalizeBanner, loadBanners } from "../cms/banners.js";
 import BannerNoticeBar from "../components/BannerNoticeBar.vue";
 import PartnerLogoHoverCard from "../components/PartnerLogoHoverCard.vue";
 import { cmsTick } from "../cms/cmsTick.js";
 import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
 import { I18N } from "../i18n.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate, newsTitleForLang, newsDescForLang } from "../cms/news.js";
 import { PARTNER_LOGOS_HOME_PREVIEW } from "../cms/partnersPage.js";
+
+const lang = inject("hisunLang", ref("zh"));
 
 /** 与解决方案页五个 Tab 一致；数据来自 Sanity「解决方案页配置」中的简介 + 默认 i18n */
 const homeBusinessCategories = computed(() => {

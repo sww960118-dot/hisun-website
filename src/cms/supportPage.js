@@ -1,3 +1,5 @@
+import { cmsPickStr, cmsPickParagraphs, cmsPickPortable } from "./cmsLocale.js";
+
 const DEFAULT_SUPPORT_SECTIONS = [
   {
     id: "consult",
@@ -39,6 +41,10 @@ function normalizeItem(item, sectionId, index) {
     id: item.id || `${sectionId}-${index + 1}`,
     title: item.title || `服务项 ${index + 1}`,
     desc: item.desc || "",
+    titleEn: item.titleEn,
+    titleZhHant: item.titleZhHant,
+    descEn: item.descEn,
+    descZhHant: item.descZhHant,
     detailId: item.detailId || item.id || `${sectionId}-${index + 1}`,
   };
 }
@@ -63,6 +69,36 @@ function resolveSupportSections() {
 /** 运行时解析，与 prefetch 顺序无关 */
 export function getSupportSections() {
   return resolveSupportSections();
+}
+
+export function supportListTitleForLang(item, lang) {
+  if (!item) return "";
+  return cmsPickStr(item.title, item.titleEn, item.titleZhHant, lang);
+}
+
+export function supportListDescForLang(item, lang) {
+  if (!item) return "";
+  return cmsPickStr(item.desc, item.descEn, item.descZhHant, lang);
+}
+
+export function supportDetailTitleForLang(detail, lang) {
+  if (!detail) return "";
+  return cmsPickStr(detail.title, detail.titleEn, detail.titleZhHant, lang);
+}
+
+export function supportDetailDescForLang(detail, lang) {
+  if (!detail) return "";
+  return cmsPickStr(detail.desc, detail.descEn, detail.descZhHant, lang);
+}
+
+export function supportDetailContentForLang(detail, lang) {
+  if (!detail) return [];
+  return cmsPickParagraphs(detail.content, detail.contentEn, detail.contentZhHant, lang);
+}
+
+export function supportDetailPortableForLang(detail, lang) {
+  if (!detail) return null;
+  return cmsPickPortable(detail.contentPortable, detail.contentPortableEn, detail.contentPortableZhHant, lang);
 }
 
 const SUPPORT_DETAIL_FALLBACK_IMAGES = [
@@ -113,13 +149,21 @@ function normalizeSupportDetailRecord(x) {
     sectionTitle: String(x.sectionTitle || ""),
     title: String(x.title || ""),
     desc: String(x.desc || ""),
+    titleEn: x.titleEn,
+    titleZhHant: x.titleZhHant,
+    descEn: x.descEn,
+    descZhHant: x.descZhHant,
     source: String(x.source || "高阳金信官网"),
     editor: String(x.editor || "服务支持编辑部"),
     views: Number(x.views) || 0,
     publishDate: String(x.publishDate || "2025-08-12"),
     image: String(x.image || SUPPORT_DETAIL_FALLBACK_IMAGES[0]),
     content: Array.isArray(x.content) ? x.content.map((p) => String(p)) : [],
+    contentEn: Array.isArray(x.contentEn) ? x.contentEn.map((p) => String(p)) : null,
+    contentZhHant: Array.isArray(x.contentZhHant) ? x.contentZhHant.map((p) => String(p)) : null,
     contentPortable: Array.isArray(x.contentPortable) ? x.contentPortable : null,
+    contentPortableEn: Array.isArray(x.contentPortableEn) ? x.contentPortableEn : null,
+    contentPortableZhHant: Array.isArray(x.contentPortableZhHant) ? x.contentPortableZhHant : null,
   };
 }
 

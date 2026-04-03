@@ -487,6 +487,7 @@
 </template>
 
 <script setup>
+import { provide } from "vue";
 import { useSiteShell } from "../composables/useSiteShell.js";
 import "../assets/hisun.css";
 
@@ -504,6 +505,8 @@ const {
   toggleMobAcc,
   closeMobileNav,
 } = useSiteShell();
+
+provide("hisunLang", lang);
 </script>
 
 

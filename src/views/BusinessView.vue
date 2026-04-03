@@ -91,10 +91,10 @@
                     :data-i18n="titleKey"
                   ></h3>
                   <p
-                    v-if="currentBizCategory.introduction"
+                    v-if="bizCategoryIntroDisplay"
                     class="hs-text-body mt-4 text-[15px] leading-relaxed text-[#4b5563] dark:text-zinc-400"
                   >
-                    {{ currentBizCategory.introduction }}
+                    {{ bizCategoryIntroDisplay }}
                   </p>
                   <p
                     v-else
@@ -362,8 +362,8 @@
                 <img :src="item.image" alt="" class="biz-hot-news-card__img h-[170px] w-full object-cover transition duration-500" loading="lazy" />
               </div>
               <div class="mt-4">
-                <h4 class="biz-hot-news-card__title text-[20px] font-medium leading-snug text-[#1f2937] dark:text-zinc-100">{{ item.title }}</h4>
-                <p class="mt-3 line-clamp-2 text-[12px] leading-relaxed text-zinc-500 dark:text-zinc-400">{{ item.desc }}</p>
+                <h4 class="biz-hot-news-card__title text-[20px] font-medium leading-snug text-[#1f2937] dark:text-zinc-100">{{ newsTitleForLang(item, lang) }}</h4>
+                <p class="mt-3 line-clamp-2 text-[12px] leading-relaxed text-zinc-500 dark:text-zinc-400">{{ newsDescForLang(item, lang) }}</p>
                 <time class="mt-2 block text-[13px] text-zinc-400">{{ item.date }}</time>
               </div>
             </a>
@@ -375,13 +375,17 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, inject, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { PARTNER_LOGOS } from "../cms/partners.js";
 import { BUSINESS_TAB_IMAGES } from "../cms/businessPage.js";
-import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
+import {
+  bizModuleTitleForLang,
+  bizSolutionIntroForLang,
+  resolveBusinessSolutionCategories,
+} from "../cms/businessSolutionsPage.js";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate, newsTitleForLang, newsDescForLang } from "../cms/news.js";
 import { I18N } from "../i18n.js";
 
 const TAB_COUNT = 5;
@@ -389,6 +393,7 @@ const tabLabelKeys = ["biz_1", "biz_2", "biz_3", "biz_4", "biz_5"];
 
 const route = useRoute();
 const router = useRouter();
+const lang = inject("hisunLang", ref("zh"));
 const activeTab = ref(0);
 const consultDialogOpen = ref(false);
 
@@ -409,8 +414,14 @@ const solutionCategories = computed(() => {
 });
 
 const currentBizCategory = computed(
-  () => solutionCategories.value.find((c) => c.tabIndex === activeTab.value) ?? solutionCategories.value[0]
+  () => solutionCategories.value.find((c) => c.tabIndex === activeTab.value) ?? solutionCategories.value[0],
 );
+
+const bizCategoryIntroDisplay = computed(() => {
+  const cat = currentBizCategory.value;
+  if (!cat) return "";
+  return bizSolutionIntroForLang(cat, lang.value);
+});
 
 /** CMS 异步写入或 Tab 切换后补刷 #biz-solutions 内 data-i18n（简介走 CMS 时不依赖此项） */
 function refreshBizSolutionsI18n() {
@@ -499,7 +510,8 @@ const currentImage = computed(
 );
 
 function moduleTileTitle(mod) {
-  return mod.title && String(mod.title).trim() ? String(mod.title).trim() : "";
+  const t = bizModuleTitleForLang(mod, lang.value);
+  return t && String(t).trim() ? String(t).trim() : "";
 }
 
 function featureTileTo(mod) {

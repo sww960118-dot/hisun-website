@@ -108,10 +108,10 @@
             <div class="flex flex-col justify-center px-6 py-8 sm:px-10 sm:py-10 lg:pl-12 lg:pr-10">
               <h3
                 class="text-xl font-bold leading-snug text-[#0f172a] sm:text-2xl dark:text-white"
-              >{{ featured.title }}</h3>
+              >{{ caseTitleForLang(featured, lang) }}</h3>
               <p
                 class="hs-text-body mt-4 text-zinc-600 dark:text-zinc-400"
-              >{{ featured.summary }}</p>
+              >{{ caseSummaryForLang(featured, lang) }}</p>
               <div class="mt-8 flex flex-wrap items-center gap-4">
                 <RouterLink
                   :to="{ name: 'partners-case-detail', query: { id: featured.id, from: 'partners' } }"
@@ -162,10 +162,10 @@
             <div class="flex flex-1 flex-col p-5">
               <h3
                 class="text-lg font-bold leading-snug text-zinc-800 transition-colors group-hover:text-white dark:text-zinc-100"
-              >{{ c.title }}</h3>
+              >{{ caseTitleForLang(c, lang) }}</h3>
               <p
                 class="hs-text-body mt-3 flex-1 text-zinc-600 transition-colors group-hover:text-white/90 dark:text-zinc-400"
-              >{{ c.summary }}</p>
+              >{{ caseSummaryForLang(c, lang) }}</p>
               <div
                 class="mt-6 flex flex-wrap items-center justify-end gap-3 border-t border-zinc-100 pt-4 transition-colors group-hover:border-white/25 dark:border-zinc-700"
               >
@@ -199,7 +199,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import PartnerLogoHoverCard from "../components/PartnerLogoHoverCard.vue";
@@ -208,11 +208,14 @@ import {
   PARTNER_SECTOR_TABS,
   PARTNERS_CONTACT_EMAIL,
   getPartnerCaseArticles,
+  caseTitleForLang,
+  caseSummaryForLang,
 } from "../cms/partnersPage.js";
 import { cmsTick } from "../cms/cmsTick.js";
 
 const route = useRoute();
 const router = useRouter();
+const lang = inject("hisunLang", ref("zh"));
 
 const sectorTabs = PARTNER_SECTOR_TABS;
 

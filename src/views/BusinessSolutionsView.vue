@@ -53,10 +53,10 @@
             <h2 class="hs-text-page-h2 text-[#111827] dark:text-white" :data-i18n="currentCategory.titleKey"></h2>
             <div class="hs-heading-rule mt-3" aria-hidden="true"></div>
             <p
-              v-if="currentCategory.introduction"
+              v-if="bizIntroForCurrentCategory"
               class="hs-text-body mt-5 max-w-none whitespace-pre-wrap text-[15px] leading-[1.85] text-[#374151] dark:text-zinc-400"
             >
-              {{ currentCategory.introduction }}
+              {{ bizIntroForCurrentCategory }}
             </p>
             <p
               v-else
@@ -74,11 +74,11 @@
                 :class="revealStaggerClass(idx)"
               >
                 <h3 class="support-card__title text-[24px] font-semibold leading-[1.22] text-[#1f2937] dark:text-white">
-                  <template v-if="item.title">{{ item.title }}</template>
+                  <template v-if="moduleTitle(item)">{{ moduleTitle(item) }}</template>
                   <span v-else :data-i18n="item.titleKey"></span>
                 </h3>
                 <p class="support-card__desc text-[14px] leading-7 text-zinc-600 dark:text-zinc-300">
-                  {{ item.desc }}
+                  {{ moduleDesc(item) }}
                 </p>
                 <RouterLink
                   :to="detailRoute(item)"
@@ -96,13 +96,19 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject, ref } from "vue";
 import { useRoute } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { cmsTick } from "../cms/cmsTick.js";
-import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
+import {
+  bizModuleDescForLang,
+  bizModuleTitleForLang,
+  bizSolutionIntroForLang,
+  resolveBusinessSolutionCategories,
+} from "../cms/businessSolutionsPage.js";
 
 const route = useRoute();
+const lang = inject("hisunLang", ref("zh"));
 const categories = computed(() => {
   cmsTick.value;
   return resolveBusinessSolutionCategories();
@@ -120,6 +126,21 @@ const activeTab = computed(() => {
 const currentCategory = computed(
   () => categories.value.find((c) => c.tabIndex === activeTab.value) ?? categories.value[0] ?? null,
 );
+
+const bizIntroForCurrentCategory = computed(() => {
+  const cat = currentCategory.value;
+  if (!cat) return "";
+  return bizSolutionIntroForLang(cat, lang.value);
+});
+
+function moduleTitle(item) {
+  const t = bizModuleTitleForLang(item, lang.value);
+  return t && String(t).trim() ? String(t).trim() : "";
+}
+
+function moduleDesc(item) {
+  return bizModuleDescForLang(item, lang.value);
+}
 
 function revealStaggerClass(index) {
   return REVEAL_STAGGER[index % REVEAL_STAGGER.length] || "";

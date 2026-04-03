@@ -29,7 +29,7 @@ async function sanityQuery(query, params = {}, attempt = 0) {
   try {
     const headers = { Accept: "application/json" };
     if (readToken) headers.Authorization = `Bearer ${readToken}`;
-    const res = await fetch(url.toString(), { headers, cache: "no-store" });
+    const res = await fetch(url.toString(), { headers, cache: "default" });
     if (!res.ok) {
       if (attempt < 2 && (res.status >= 500 || res.status === 429)) {
         await sleep(400 * (attempt + 1));
@@ -114,7 +114,8 @@ function firstImageUrlFromPortable(blocks) {
 /**
  * 正文 Portable Text：显式展开 image / embedImage / block，避免仅用 `@` 时 embedImage 在 CDN 上丢失。
  */
-const GROQ_CONTENT_PORTABLE = `content[]{
+function groqPortableField(fieldName) {
+  return `${fieldName}[]{
   _type == "image" => {
     "_type": "image",
     "_key": _key,
@@ -138,9 +139,75 @@ const GROQ_CONTENT_PORTABLE = `content[]{
   },
   true => @
 }`;
+}
 
-export async function fetchSanityNewsItems({ limit = 50 } = {}) {
-  // 仅取页面展示需要的字段；正文用 pt::text 生成纯文本
+const GROQ_CONTENT_PORTABLE = groqPortableField("content");
+
+function mapSanityNewsRow(it, lite) {
+  const paragraphs = splitPortableTextToParagraphs(it?.contentText);
+  const paragraphsEn = splitPortableTextToParagraphs(it?.contentTextEn);
+  const paragraphsZhHant = splitPortableTextToParagraphs(it?.contentTextZhHant);
+
+  const teaser = paragraphs[0] || String(it?.contentText || "").trim();
+  const teaserEn = paragraphsEn[0] || String(it?.contentTextEn || "").trim();
+  const teaserZhHant = paragraphsZhHant[0] || String(it?.contentTextZhHant || "").trim();
+
+  let desc = String(it?.desc ?? "").trim();
+  if (!desc && teaser) desc = truncateCaseCardSummary(teaser);
+
+  let descEn = String(it?.excerptEn ?? "").trim();
+  if (!descEn && teaserEn) descEn = truncateCaseCardSummary(teaserEn);
+
+  let descZhHant = String(it?.excerptZhHant ?? "").trim();
+  if (!descZhHant && teaserZhHant) descZhHant = truncateCaseCardSummary(teaserZhHant);
+
+  const editor = String(it?.editor ?? "").trim() || "高阳金信";
+  const coverUrl = it?.image != null && it.image !== "" ? String(it.image).trim() : "";
+  const bodyFirstUrl = lite
+    ? String(it?.firstBodyImageUrl ?? "").trim()
+    : firstImageUrlFromPortable(it?.contentPortable);
+  const image = coverUrl || bodyFirstUrl || "";
+  const date =
+    sanityDateToYmdChina(it?.publishedAt) ||
+    sanityDateToYmdChina(it?._createdAt) ||
+    "";
+  const title = String(it?.title ?? "").trim();
+  const titleEn = String(it?.titleEn ?? "").trim();
+  const titleZhHant = String(it?.titleZhHant ?? "").trim();
+
+  return {
+    ...it,
+    pinned: it?.pinned === true,
+    date,
+    image,
+    title,
+    titleEn: titleEn || undefined,
+    titleZhHant: titleZhHant || undefined,
+    desc,
+    descEn: descEn || undefined,
+    descZhHant: descZhHant || undefined,
+    editor,
+    content: paragraphs,
+    contentEn: paragraphsEn.length ? paragraphsEn : null,
+    contentZhHant: paragraphsZhHant.length ? paragraphsZhHant : null,
+    contentPortable: lite ? null : Array.isArray(it?.contentPortable) ? it.contentPortable : null,
+    contentPortableEn: lite ? null : Array.isArray(it?.contentPortableEn) ? it.contentPortableEn : null,
+    contentPortableZhHant: lite ? null : Array.isArray(it?.contentPortableZhHant) ? it.contentPortableZhHant : null,
+  };
+}
+
+/**
+ * 列表/首屏预取：不拉 contentPortable，显著减小 JSON；封面用 firstBodyImageUrl 兜底。
+ */
+export async function fetchSanityNewsItems({ limit = 50, lite = false } = {}) {
+  const portableBlock = lite
+    ? `"firstBodyImageUrl": coalesce(
+      content[_type == "image"][0].asset->url,
+      content[_type == "embedImage"][0].url
+    )`
+    : `"contentPortable": ${GROQ_CONTENT_PORTABLE},
+    "contentPortableEn": ${groqPortableField("contentEn")},
+    "contentPortableZhHant": ${groqPortableField("contentZhHant")}`;
   const q = `*[_type == "news"] | order(coalesce(pinned, false) desc, publishedAt desc)[0...$limit]{
     "id": _id,
     "pinned": coalesce(pinned, false),
@@ -152,38 +219,55 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
     "_createdAt": _createdAt,
     "views": 0,
     "title": coalesce(title, ""),
+    "titleEn": coalesce(titleEn, ""),
+    "titleZhHant": coalesce(titleZhHant, ""),
     "desc": coalesce(excerpt, ""),
+    "excerptEn": coalesce(excerptEn, ""),
+    "excerptZhHant": coalesce(excerptZhHant, ""),
     "image": coverImage.asset->url,
     "editor": coalesce(editor, ""),
     "contentText": pt::text(content),
-    "contentPortable": ${GROQ_CONTENT_PORTABLE}
+    "contentTextEn": pt::text(contentEn),
+    "contentTextZhHant": pt::text(contentZhHant),
+    ${portableBlock}
   }`;
   const res = await sanityQuery(q, { limit });
   if (!Array.isArray(res)) return null;
-  return res.map((it) => {
-    const paragraphs = splitPortableTextToParagraphs(it?.contentText);
-    const teaser = paragraphs[0] || String(it?.contentText || "").trim();
-    let desc = String(it?.desc ?? "").trim();
-    if (!desc && teaser) desc = truncateCaseCardSummary(teaser);
-    const editor = String(it?.editor ?? "").trim() || "高阳金信";
-    const coverUrl = it?.image != null && it.image !== "" ? String(it.image).trim() : "";
-    const bodyFirstUrl = firstImageUrlFromPortable(it?.contentPortable);
-    const image = coverUrl || bodyFirstUrl || "";
-    const date =
-      sanityDateToYmdChina(it?.publishedAt) ||
-      sanityDateToYmdChina(it?._createdAt) ||
-      "";
-    return {
-      ...it,
-      pinned: it?.pinned === true,
-      date,
-      image,
-      desc,
-      editor,
-      content: paragraphs,
-      contentPortable: Array.isArray(it?.contentPortable) ? it.contentPortable : null,
-    };
-  });
+  return res.map((it) => mapSanityNewsRow(it, lite));
+}
+
+/** 单篇详情补全（富文本 Portable），供新闻详情页按需请求 */
+export async function fetchSanityNewsById(id) {
+  const rawId = String(id || "").trim();
+  if (!rawId) return null;
+  const q = `*[_type == "news" && _id == $id][0]{
+    "id": _id,
+    "pinned": coalesce(pinned, false),
+    "category": select(
+      category in ["notice", "headline", "staff"] => category,
+      true => "notice"
+    ),
+    "publishedAt": publishedAt,
+    "_createdAt": _createdAt,
+    "views": 0,
+    "title": coalesce(title, ""),
+    "titleEn": coalesce(titleEn, ""),
+    "titleZhHant": coalesce(titleZhHant, ""),
+    "desc": coalesce(excerpt, ""),
+    "excerptEn": coalesce(excerptEn, ""),
+    "excerptZhHant": coalesce(excerptZhHant, ""),
+    "image": coverImage.asset->url,
+    "editor": coalesce(editor, ""),
+    "contentText": pt::text(content),
+    "contentTextEn": pt::text(contentEn),
+    "contentTextZhHant": pt::text(contentZhHant),
+    "contentPortable": ${GROQ_CONTENT_PORTABLE},
+    "contentPortableEn": ${groqPortableField("contentEn")},
+    "contentPortableZhHant": ${groqPortableField("contentZhHant")}
+  }`;
+  const res = await sanityQuery(q, { id: rawId });
+  if (!res || typeof res !== "object") return null;
+  return mapSanityNewsRow(res, false);
 }
 
 const SUPPORT_SECTION_ORDER = [
@@ -219,19 +303,30 @@ function truncateSupportCardDesc(text, max = 120) {
 /**
  * 拉取「服务支持」文档，组装为 supportSections + supportDetails（与 SupportView / ServiceDetailView 约定一致）
  */
-export async function fetchSanitySupportMaintenance({ limit = 100 } = {}) {
+export async function fetchSanitySupportMaintenance({ limit = 100, lite = false } = {}) {
+  const portableExtra = lite
+    ? ""
+    : `,
+    "contentPortable": ${GROQ_CONTENT_PORTABLE},
+    "contentPortableEn": ${groqPortableField("contentEn")},
+    "contentPortableZhHant": ${groqPortableField("contentZhHant")}`;
   const q = `*[_type == "supportMaintenance"] | order(coalesce(publishedAt, _createdAt) desc)[0...$limit]{
     "id": _id,
     "title": coalesce(title, ""),
+    "titleEn": coalesce(titleEn, ""),
+    "titleZhHant": coalesce(titleZhHant, ""),
     "category": select(
       category in ["consult", "recommended", "solutions"] => category,
       true => "consult"
     ),
     "publishedAt": coalesce(publishedAt, _createdAt),
     "bodyText": pt::text(content),
+    "bodyTextEn": pt::text(contentEn),
+    "bodyTextZhHant": pt::text(contentZhHant),
     "excerpt": coalesce(excerpt, ""),
-    "editor": coalesce(editor, ""),
-    "contentPortable": ${GROQ_CONTENT_PORTABLE}
+    "excerptEn": coalesce(excerptEn, ""),
+    "excerptZhHant": coalesce(excerptZhHant, ""),
+    "editor": coalesce(editor, "")${portableExtra}
   }`;
   const rows = await sanityQuery(q, { limit });
   if (!Array.isArray(rows) || rows.length === 0) return null;
@@ -247,10 +342,18 @@ export async function fetchSanitySupportMaintenance({ limit = 100 } = {}) {
     if (!buckets[cat]) continue;
     const id = String(row.id || "");
     const title = String(row.title || "").trim() || "未命名";
+    const titleEn = String(row.titleEn || "").trim();
+    const titleZhHant = String(row.titleZhHant || "").trim();
     const bodyText = row.bodyText;
     const paragraphs = splitPortableTextToParagraphs(bodyText);
+    const paragraphsEn = splitPortableTextToParagraphs(row.bodyTextEn);
+    const paragraphsZhHant = splitPortableTextToParagraphs(row.bodyTextZhHant);
     const excerptTrim = String(row.excerpt || "").trim();
+    const excerptEnTrim = String(row.excerptEn || "").trim();
+    const excerptZhHantTrim = String(row.excerptZhHant || "").trim();
     const cardDesc = excerptTrim || truncateSupportCardDesc(bodyText);
+    const cardDescEn = excerptEnTrim || truncateSupportCardDesc(row.bodyTextEn);
+    const cardDescZhHant = excerptZhHantTrim || truncateSupportCardDesc(row.bodyTextZhHant);
     const dateRaw = sanityDateToYmdChina(row.publishedAt) || "2026-01-01";
     const editorName = String(row.editor || "").trim() || "高阳金信";
 
@@ -258,7 +361,11 @@ export async function fetchSanitySupportMaintenance({ limit = 100 } = {}) {
       listItem: {
         id,
         title,
+        titleEn: titleEn || undefined,
+        titleZhHant: titleZhHant || undefined,
         desc: cardDesc,
+        descEn: cardDescEn || undefined,
+        descZhHant: cardDescZhHant || undefined,
         detailId: id,
       },
       detailItem: {
@@ -266,14 +373,22 @@ export async function fetchSanitySupportMaintenance({ limit = 100 } = {}) {
         sectionId: cat,
         sectionTitle: SUPPORT_SECTION_ORDER.find((s) => s.id === cat)?.title || "",
         title,
-        desc: "",
+        titleEn: titleEn || undefined,
+        titleZhHant: titleZhHant || undefined,
+        desc: excerptTrim || cardDesc,
+        descEn: excerptEnTrim || cardDescEn,
+        descZhHant: excerptZhHantTrim || cardDescZhHant,
         source: "高阳金信官网",
         editor: editorName,
         views: hashSupportViews(id),
         publishDate: dateRaw,
         image: SUPPORT_DETAIL_FALLBACK_IMAGES[0],
         content: paragraphs.length ? paragraphs : [cardDesc],
-        contentPortable: Array.isArray(row.contentPortable) ? row.contentPortable : null,
+        contentEn: paragraphsEn.length ? paragraphsEn : null,
+        contentZhHant: paragraphsZhHant.length ? paragraphsZhHant : null,
+        contentPortable: lite ? null : Array.isArray(row.contentPortable) ? row.contentPortable : null,
+        contentPortableEn: lite ? null : Array.isArray(row.contentPortableEn) ? row.contentPortableEn : null,
+        contentPortableZhHant: lite ? null : Array.isArray(row.contentPortableZhHant) ? row.contentPortableZhHant : null,
       },
     });
   }
@@ -316,19 +431,33 @@ export async function fetchSanityJobPostings({ limit = 100 } = {}) {
   const q = `*[_type == "jobPosting"] | order(publishedAt desc)[0...$limit]{
     "id": _id,
     "title": coalesce(title, ""),
+    "titleEn": coalesce(titleEn, ""),
+    "titleZhHant": coalesce(titleZhHant, ""),
     "type": jobType,
     "headcount": headcount,
     "location": workLocation,
     "degree": education,
     "publishedAt": publishedAt,
     "responsibilities": coalesce(responsibilities, []),
-    "requirements": coalesce(requirements, [])
+    "requirements": coalesce(requirements, []),
+    "responsibilitiesEn": coalesce(responsibilitiesEn, []),
+    "responsibilitiesZhHant": coalesce(responsibilitiesZhHant, []),
+    "requirementsEn": coalesce(requirementsEn, []),
+    "requirementsZhHant": coalesce(requirementsZhHant, []),
+    "typeDisplayEn": coalesce(jobTypeDisplayEn, ""),
+    "typeDisplayZhHant": coalesce(jobTypeDisplayZhHant, ""),
+    "locationDisplayEn": coalesce(workLocationDisplayEn, ""),
+    "locationDisplayZhHant": coalesce(workLocationDisplayZhHant, ""),
+    "degreeDisplayEn": coalesce(educationDisplayEn, ""),
+    "degreeDisplayZhHant": coalesce(educationDisplayZhHant, "")
   }`;
   const res = await sanityQuery(q, { limit });
   if (!Array.isArray(res) || res.length === 0) return null;
   return res.map((row) => ({
     id: String(row.id || ""),
     title: String(row.title || ""),
+    titleEn: String(row.titleEn || "").trim() || undefined,
+    titleZhHant: String(row.titleZhHant || "").trim() || undefined,
     type: String(row.type || ""),
     headcount: Number(row.headcount) || 1,
     location: String(row.location || ""),
@@ -340,6 +469,24 @@ export async function fetchSanityJobPostings({ limit = 100 } = {}) {
     requirements: Array.isArray(row.requirements)
       ? row.requirements.map((x) => String(x).trim()).filter(Boolean)
       : [],
+    responsibilitiesEn: Array.isArray(row.responsibilitiesEn)
+      ? row.responsibilitiesEn.map((x) => String(x).trim()).filter(Boolean)
+      : [],
+    responsibilitiesZhHant: Array.isArray(row.responsibilitiesZhHant)
+      ? row.responsibilitiesZhHant.map((x) => String(x).trim()).filter(Boolean)
+      : [],
+    requirementsEn: Array.isArray(row.requirementsEn)
+      ? row.requirementsEn.map((x) => String(x).trim()).filter(Boolean)
+      : [],
+    requirementsZhHant: Array.isArray(row.requirementsZhHant)
+      ? row.requirementsZhHant.map((x) => String(x).trim()).filter(Boolean)
+      : [],
+    typeDisplayEn: String(row.typeDisplayEn || "").trim() || undefined,
+    typeDisplayZhHant: String(row.typeDisplayZhHant || "").trim() || undefined,
+    locationDisplayEn: String(row.locationDisplayEn || "").trim() || undefined,
+    locationDisplayZhHant: String(row.locationDisplayZhHant || "").trim() || undefined,
+    degreeDisplayEn: String(row.degreeDisplayEn || "").trim() || undefined,
+    degreeDisplayZhHant: String(row.degreeDisplayZhHant || "").trim() || undefined,
   }));
 }
 
@@ -356,11 +503,19 @@ function groqBusinessSolutionsProjection() {
     (key) =>
       `${key} {
         introduction,
+        introductionEn,
+        introductionZhHant,
         "refs": supportItems[]->{
           _id,
           "title": coalesce(title, ""),
+          "titleEn": coalesce(titleEn, ""),
+          "titleZhHant": coalesce(titleZhHant, ""),
           "excerpt": coalesce(excerpt, ""),
-          "bodyText": pt::text(content)
+          "excerptEn": coalesce(excerptEn, ""),
+          "excerptZhHant": coalesce(excerptZhHant, ""),
+          "bodyText": pt::text(content),
+          "bodyTextEn": pt::text(contentEn),
+          "bodyTextZhHant": pt::text(contentZhHant)
         }
       }`,
   ).join(",\n");
@@ -378,10 +533,18 @@ export async function fetchSanityBusinessSolutionsConfig() {
   return res;
 }
 
-export async function fetchSanityPartnerCases({ limit = 50 } = {}) {
+export async function fetchSanityPartnerCases({ limit = 50, lite = false } = {}) {
+  const portableExtra = lite
+    ? ""
+    : `,
+    "contentPortable": ${GROQ_CONTENT_PORTABLE},
+    "contentPortableEn": ${groqPortableField("contentEn")},
+    "contentPortableZhHant": ${groqPortableField("contentZhHant")}`;
   const q = `*[_type == "case"] | order(pinned desc, publishedAt desc)[0...$limit]{
     "id": _id,
     "title": coalesce(title, ""),
+    "titleEn": coalesce(titleEn, ""),
+    "titleZhHant": coalesce(titleZhHant, ""),
     "coverUrl": coverImage.asset->url,
     "firstBodyImageUrl": coalesce(
       content[_type == "image"][0].asset->url,
@@ -389,33 +552,55 @@ export async function fetchSanityPartnerCases({ limit = 50 } = {}) {
     ),
     "publishedAt": publishedAt,
     "bodyText": pt::text(content),
+    "bodyTextEn": pt::text(contentEn),
+    "bodyTextZhHant": pt::text(contentZhHant),
     "excerpt": coalesce(excerpt, ""),
-    "editor": coalesce(editor, ""),
-    "contentPortable": ${GROQ_CONTENT_PORTABLE}
+    "excerptEn": coalesce(excerptEn, ""),
+    "excerptZhHant": coalesce(excerptZhHant, ""),
+    "editor": coalesce(editor, "")${portableExtra}
   }`;
   const res = await sanityQuery(q, { limit });
   if (!Array.isArray(res)) return null;
   return res.map((it) => {
     const paragraphs = splitPortableTextToParagraphs(it?.bodyText);
+    const paragraphsEn = splitPortableTextToParagraphs(it?.bodyTextEn);
+    const paragraphsZhHant = splitPortableTextToParagraphs(it?.bodyTextZhHant);
     const teaserSource = paragraphs[0] || String(it?.bodyText || "").trim();
+    const teaserEn = paragraphsEn[0] || String(it?.bodyTextEn || "").trim();
+    const teaserZhHant = paragraphsZhHant[0] || String(it?.bodyTextZhHant || "").trim();
     const excerptTrim = String(it.excerpt || "").trim();
+    const excerptEnTrim = String(it.excerptEn || "").trim();
+    const excerptZhHantTrim = String(it.excerptZhHant || "").trim();
     const summary = truncateCaseCardSummary(excerptTrim || teaserSource);
+    const summaryEn = truncateCaseCardSummary(excerptEnTrim || teaserEn);
+    const summaryZhHant = truncateCaseCardSummary(excerptZhHantTrim || teaserZhHant);
     const image =
       (it?.coverUrl && String(it.coverUrl)) ||
       (it?.firstBodyImageUrl && String(it.firstBodyImageUrl)) ||
       caseDefaultCoverUrl();
     const editorName = String(it.editor || "").trim() || "高阳金信";
+    const title = String(it.title || "").trim();
+    const titleEn = String(it.titleEn || "").trim();
+    const titleZhHant = String(it.titleZhHant || "").trim();
     return {
       id: it.id,
-      title: it.title,
+      title,
+      titleEn: titleEn || undefined,
+      titleZhHant: titleZhHant || undefined,
       summary,
+      summaryEn: summaryEn || undefined,
+      summaryZhHant: summaryZhHant || undefined,
       source: "典型案例",
       editor: editorName,
       views: 0,
       publishDate: sanityDateToYmdChina(it.publishedAt) || "2026-01-01",
       image,
       content: paragraphs,
-      contentPortable: Array.isArray(it?.contentPortable) ? it.contentPortable : null,
+      contentEn: paragraphsEn.length ? paragraphsEn : null,
+      contentZhHant: paragraphsZhHant.length ? paragraphsZhHant : null,
+      contentPortable: lite ? null : Array.isArray(it?.contentPortable) ? it.contentPortable : null,
+      contentPortableEn: lite ? null : Array.isArray(it?.contentPortableEn) ? it.contentPortableEn : null,
+      contentPortableZhHant: lite ? null : Array.isArray(it?.contentPortableZhHant) ? it.contentPortableZhHant : null,
       cmsContentOnly: true,
     };
   });

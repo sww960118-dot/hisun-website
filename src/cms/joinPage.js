@@ -1,3 +1,5 @@
+import { cmsPickParagraphs, cmsPickStr } from "./cmsLocale.js";
+
 const line = (s) => String(s || "").trim();
 
 const DEFAULT_JOIN_JOBS = [
@@ -111,17 +113,84 @@ function normalizeJob(job, idx) {
   const defaults = defaultJobDetail(job.title || "招聘岗位", job.degree || "本科及以上");
   const resp = Array.isArray(job.responsibilities) ? job.responsibilities.map(line).filter(Boolean) : [];
   const req = Array.isArray(job.requirements) ? job.requirements.map(line).filter(Boolean) : [];
+  const respEn = Array.isArray(job.responsibilitiesEn) ? job.responsibilitiesEn.map(line).filter(Boolean) : [];
+  const respZhHant = Array.isArray(job.responsibilitiesZhHant) ? job.responsibilitiesZhHant.map(line).filter(Boolean) : [];
+  const reqEn = Array.isArray(job.requirementsEn) ? job.requirementsEn.map(line).filter(Boolean) : [];
+  const reqZhHant = Array.isArray(job.requirementsZhHant) ? job.requirementsZhHant.map(line).filter(Boolean) : [];
+  const te = job.titleEn != null && String(job.titleEn).trim() ? String(job.titleEn).trim() : undefined;
+  const th = job.titleZhHant != null && String(job.titleZhHant).trim() ? String(job.titleZhHant).trim() : undefined;
   return {
     id: job.id || `job-${idx + 1}`,
     title: job.title || "招聘岗位",
+    titleEn: te,
+    titleZhHant: th,
     headcount: Number(job.headcount) || 1,
     location: job.location || "深圳",
     degree: job.degree || "本科及以上",
     publishDate: job.publishDate || "2025-08-12",
     type: job.type || "其他",
+    typeDisplayEn: job.typeDisplayEn,
+    typeDisplayZhHant: job.typeDisplayZhHant,
+    locationDisplayEn: job.locationDisplayEn,
+    locationDisplayZhHant: job.locationDisplayZhHant,
+    degreeDisplayEn: job.degreeDisplayEn,
+    degreeDisplayZhHant: job.degreeDisplayZhHant,
     responsibilities: resp.length ? resp : defaults.responsibilities,
     requirements: req.length ? req : defaults.requirements,
+    responsibilitiesEn: respEn.length ? respEn : undefined,
+    responsibilitiesZhHant: respZhHant.length ? respZhHant : undefined,
+    requirementsEn: reqEn.length ? reqEn : undefined,
+    requirementsZhHant: reqZhHant.length ? reqZhHant : undefined,
   };
+}
+
+export function jobTitleForLang(job, lang) {
+  return cmsPickStr(job.title, job.titleEn, job.titleZhHant, lang);
+}
+
+export function jobResponsibilitiesForLang(job, lang) {
+  return cmsPickParagraphs(job.responsibilities, job.responsibilitiesEn, job.responsibilitiesZhHant, lang);
+}
+
+export function jobRequirementsForLang(job, lang) {
+  return cmsPickParagraphs(job.requirements, job.requirementsEn, job.requirementsZhHant, lang);
+}
+
+export function jobTypeLabelForLang(job, lang) {
+  return cmsPickStr(job.type, job.typeDisplayEn, job.typeDisplayZhHant, lang);
+}
+
+export function jobLocationLabelForLang(job, lang) {
+  return cmsPickStr(job.location, job.locationDisplayEn, job.locationDisplayZhHant, lang);
+}
+
+export function jobDegreeLabelForLang(job, lang) {
+  return cmsPickStr(job.degree, job.degreeDisplayEn, job.degreeDisplayZhHant, lang);
+}
+
+/** 搜索岗位时同时匹配各语言标题与正文片段 */
+export function jobSearchTextBlob(job) {
+  const parts = [
+    job.title,
+    job.titleEn,
+    job.titleZhHant,
+    job.type,
+    job.typeDisplayEn,
+    job.typeDisplayZhHant,
+    job.location,
+    job.locationDisplayEn,
+    job.locationDisplayZhHant,
+    job.degree,
+    job.degreeDisplayEn,
+    job.degreeDisplayZhHant,
+    ...(job.responsibilities || []),
+    ...(job.responsibilitiesEn || []),
+    ...(job.responsibilitiesZhHant || []),
+    ...(job.requirements || []),
+    ...(job.requirementsEn || []),
+    ...(job.requirementsZhHant || []),
+  ];
+  return parts.filter(Boolean).join(" ").toLowerCase();
 }
 
 function resolveJobs() {

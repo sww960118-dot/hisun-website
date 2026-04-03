@@ -1,5 +1,6 @@
 import { DEFAULT_NEWS_ITEMS } from "./news.defaults.js";
 import { sanityDateToYmdChina } from "./sanity.js";
+import { cmsPickStr, cmsPickParagraphs, cmsPickPortable } from "./cmsLocale.js";
 
 const NEWS_CATEGORIES = new Set(["notice", "headline", "staff"]);
 
@@ -53,7 +54,36 @@ function normalizeNewsItem(item, index) {
     })(),
     content: Array.isArray(item?.content) ? item.content.map((x) => String(x)) : [],
     contentPortable: Array.isArray(item?.contentPortable) ? item.contentPortable : null,
+    titleEn: item?.titleEn,
+    titleZhHant: item?.titleZhHant,
+    descEn: item?.descEn,
+    descZhHant: item?.descZhHant,
+    contentEn: Array.isArray(item?.contentEn) ? item.contentEn.map((x) => String(x)) : null,
+    contentZhHant: Array.isArray(item?.contentZhHant) ? item.contentZhHant.map((x) => String(x)) : null,
+    contentPortableEn: Array.isArray(item?.contentPortableEn) ? item.contentPortableEn : null,
+    contentPortableZhHant: Array.isArray(item?.contentPortableZhHant) ? item.contentPortableZhHant : null,
   };
+}
+
+/** 按当前语言取新闻标题/摘要/段落/Portable（供组件与 lang 联动） */
+export function newsTitleForLang(item, lang) {
+  if (!item) return "";
+  return cmsPickStr(item.title, item.titleEn, item.titleZhHant, lang);
+}
+
+export function newsDescForLang(item, lang) {
+  if (!item) return "";
+  return cmsPickStr(item.desc, item.descEn, item.descZhHant, lang);
+}
+
+export function newsContentForLang(item, lang) {
+  if (!item) return [];
+  return cmsPickParagraphs(item.content, item.contentEn, item.contentZhHant, lang);
+}
+
+export function newsPortableForLang(item, lang) {
+  if (!item) return null;
+  return cmsPickPortable(item.contentPortable, item.contentPortableEn, item.contentPortableZhHant, lang);
 }
 
 function resolveNewsRaw() {

@@ -110,7 +110,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="block text-[15px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="mt-1 text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -132,7 +132,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -152,7 +152,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -166,14 +166,15 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject, ref } from "vue";
 import { useRoute } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate, newsTitleForLang } from "../cms/news.js";
 import { SOLUTION_DETAILS } from "../cms/businessSolutionsPage.js";
 
 const route = useRoute();
+const lang = inject("hisunLang", ref("zh"));
 
 const newsCatalog = computed(() => {
   cmsTick.value;

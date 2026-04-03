@@ -65,10 +65,10 @@
               @keydown.enter.prevent="toggleJobDetail(job.id)"
               @keydown.space.prevent="toggleJobDetail(job.id)"
             >
-              <h3 class="job-card__title">{{ job.title }}</h3>
+              <h3 class="job-card__title">{{ jobTitle(job) }}</h3>
               <p class="job-card__meta">招聘人数：{{ job.headcount }}</p>
-              <p class="job-card__meta">工作地点：{{ job.location }}</p>
-              <p class="job-card__meta">学历要求：{{ job.degree }}</p>
+              <p class="job-card__meta">工作地点：{{ jobLocation(job) }}</p>
+              <p class="job-card__meta">学历要求：{{ jobDegree(job) }}</p>
               <p class="job-card__meta">发布时间：{{ job.publishDate }}</p>
               <button
                 type="button"
@@ -85,17 +85,17 @@
             </header>
 
             <div v-if="expandedJobId === job.id" class="job-card__detail">
-              <h4 class="job-card__detail-title">{{ job.title }}</h4>
+              <h4 class="job-card__detail-title">{{ jobTitle(job) }}</h4>
               <div class="job-card__detail-block">
                 <h5 class="job-card__detail-subtitle">岗位职责</h5>
                 <ol class="job-card__detail-list">
-                  <li v-for="(item, i) in job.responsibilities" :key="`${job.id}-r-${i}`">{{ item }}</li>
+                  <li v-for="(item, i) in jobResponsibilities(job)" :key="`${job.id}-r-${i}`">{{ item }}</li>
                 </ol>
               </div>
               <div class="job-card__detail-block">
                 <h5 class="job-card__detail-subtitle">任职要求</h5>
                 <ol class="job-card__detail-list">
-                  <li v-for="(item, i) in job.requirements" :key="`${job.id}-q-${i}`">{{ item }}</li>
+                  <li v-for="(item, i) in jobRequirements(job)" :key="`${job.id}-q-${i}`">{{ item }}</li>
                 </ol>
               </div>
               <button type="button" class="job-card__apply" @click="applyJob(job)">立即申请</button>
@@ -108,11 +108,21 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { UiSearchField, UiSelect } from "../components";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getJoinJobs } from "../cms/joinPage.js";
+import {
+  getJoinJobs,
+  jobDegreeLabelForLang,
+  jobLocationLabelForLang,
+  jobRequirementsForLang,
+  jobResponsibilitiesForLang,
+  jobSearchTextBlob,
+  jobTitleForLang,
+} from "../cms/joinPage.js";
+
+const lang = inject("hisunLang", ref("zh"));
 
 const jobs = computed(() => {
   cmsTick.value;
@@ -164,13 +174,34 @@ const locationFilterOptions = [
 
 const filteredJobs = computed(() =>
   jobs.value.filter((job) => {
-    const hitKeyword = !keyword.value || job.title.toLowerCase().includes(keyword.value.toLowerCase());
+    const kw = keyword.value.trim().toLowerCase();
+    const hitKeyword = !kw || jobSearchTextBlob(job).includes(kw);
     const hitType = !selectedType.value || job.type === selectedType.value;
     const hitDegree = !selectedDegree.value || job.degree === selectedDegree.value;
     const hitLocation = !selectedLocation.value || job.location === selectedLocation.value;
     return hitKeyword && hitType && hitDegree && hitLocation;
   })
 );
+
+function jobTitle(job) {
+  return jobTitleForLang(job, lang.value);
+}
+
+function jobLocation(job) {
+  return jobLocationLabelForLang(job, lang.value);
+}
+
+function jobDegree(job) {
+  return jobDegreeLabelForLang(job, lang.value);
+}
+
+function jobResponsibilities(job) {
+  return jobResponsibilitiesForLang(job, lang.value);
+}
+
+function jobRequirements(job) {
+  return jobRequirementsForLang(job, lang.value);
+}
 
 const showEmptyResult = computed(() => {
   if (filteredJobs.value.length > 0) return false;
@@ -197,7 +228,7 @@ function toggleJobDetail(id) {
 }
 
 function applyJob(job) {
-  const subject = encodeURIComponent(`应聘申请 - ${job.title}`);
+  const subject = encodeURIComponent(`应聘申请 - ${jobTitleForLang(job, lang.value)}`);
   window.location.href = `mailto:bihr@hisuntech.com?subject=${subject}`;
 }
 </script>

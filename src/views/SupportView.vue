@@ -35,10 +35,10 @@
               :class="revealStaggerClass(idx)"
             >
               <h3 class="support-card__title text-[24px] font-semibold leading-[1.22] text-[#1f2937] dark:text-white">
-                {{ item.title }}
+                {{ supportListTitleForLang(item, lang) }}
               </h3>
               <p class="support-card__desc text-[14px] leading-7 text-zinc-600 dark:text-zinc-300">
-                {{ item.desc }}
+                {{ supportListDescForLang(item, lang) }}
               </p>
               <RouterLink
                 :to="{ name: 'service-detail', query: { id: item.detailId, from: 'support' } }"
@@ -55,10 +55,12 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject, ref } from "vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getSupportSections } from "../cms/supportPage.js";
+import { getSupportSections, supportListTitleForLang, supportListDescForLang } from "../cms/supportPage.js";
+
+const lang = inject("hisunLang", ref("zh"));
 
 const sections = computed(() => {
   cmsTick.value;

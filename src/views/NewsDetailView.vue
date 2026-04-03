@@ -27,7 +27,7 @@
             <div v-if="article" class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/90 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/50">
               <img :src="article.image" alt="" class="h-[260px] w-full object-cover sm:h-[360px]" loading="lazy" />
               <div class="p-6 sm:p-8">
-                <h1 class="text-[28px] font-bold leading-snug text-zinc-900 dark:text-white">{{ article.title }}</h1>
+                <h1 class="text-[28px] font-bold leading-snug text-zinc-900 dark:text-white">{{ articleDisplayTitle }}</h1>
                 <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-zinc-400">
                   <span>文章出处：{{ articleSource }}</span>
                   <span>网责任编辑：{{ articleEditor }}</span>
@@ -71,11 +71,11 @@
             <div v-if="article" class="mt-6 rounded-2xl border border-zinc-200 bg-white/90 p-5 dark:border-zinc-700 dark:bg-zinc-900/40 sm:p-6">
               <div class="grid grid-cols-1 gap-3 text-[15px] text-zinc-700 dark:text-zinc-300">
                 <RouterLink v-if="prevArticle" :to="{ name: 'news-detail', query: detailQueryFor(prevArticle.id) }" class="transition hover:text-[#3d59ff]">
-                  上一篇：{{ prevArticle.title }}
+                  上一篇：{{ newsTitleForLang(prevArticle, lang) }}
                 </RouterLink>
                 <span v-else class="text-zinc-400">上一篇：暂无</span>
                 <RouterLink v-if="nextArticle" :to="{ name: 'news-detail', query: detailQueryFor(nextArticle.id) }" class="transition hover:text-[#3d59ff]">
-                  下一篇：{{ nextArticle.title }}
+                  下一篇：{{ newsTitleForLang(nextArticle, lang) }}
                 </RouterLink>
                 <span v-else class="text-zinc-400">下一篇：暂无</span>
               </div>
@@ -100,7 +100,7 @@
                     :to="{ name: 'news-detail', query: detailQueryFor(n.id) }"
                     class="block text-[15px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="mt-1 text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -122,7 +122,7 @@
                     :to="{ name: 'news-detail', query: detailQueryFor(n.id) }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -142,7 +142,7 @@
                     :to="{ name: 'news-detail', query: detailQueryFor(n.id) }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -156,15 +156,25 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
+import {
+  getNewsItems,
+  compareNewsByPinnedThenDate,
+  newsTitleForLang,
+  newsDescForLang,
+  newsContentForLang,
+  newsPortableForLang,
+} from "../cms/news.js";
+import { fetchSanityNewsById } from "../cms/sanity.js";
+import { mergeNewsFullItemIntoCms } from "../cms/bootstrapCms.js";
 
 const route = useRoute();
+const lang = inject("hisunLang", ref("zh"));
 
 const newsCatalog = computed(() => {
   cmsTick.value;
@@ -177,20 +187,37 @@ const article = computed(() => {
   return newsCatalog.value.find((n) => n.id === id) ?? null;
 });
 
+/** 首屏新闻为 lite 预取（无 Portable）；进入详情后再补一条全文以渲染富文本与内嵌图 */
+watch(
+  () => [String(route.query.id ?? ""), route.name, cmsTick.value],
+  async ([id, name]) => {
+    if (name !== "news-detail" || !id) return;
+    const cur = getNewsItems().find((n) => n.id === id);
+    if (!cur) return;
+    const hasPortable = Array.isArray(cur.contentPortable) && cur.contentPortable.length > 0;
+    if (hasPortable) return;
+    try {
+      const full = await fetchSanityNewsById(id);
+      if (full) mergeNewsFullItemIntoCms(full);
+    } catch {
+      /* 仍可用纯文本段落 */
+    }
+  },
+  { immediate: true },
+);
+
 const articleSource = computed(() => article.value?.source ?? "高阳金信官网");
 const articleEditor = computed(() => article.value?.editor ?? "高阳金信");
 
-/** 列表字段 desc 作导语；后台可另传 content[] 追加正文段落（与案例详情一致） */
-const articleLead = computed(() => String(article.value?.desc || "").trim());
+const articleDisplayTitle = computed(() => newsTitleForLang(article.value, lang.value));
 
-const detailParagraphs = computed(() => {
-  const a = article.value;
-  if (!a || !Array.isArray(a.content) || !a.content.length) return [];
-  return a.content.map((x) => String(x).trim()).filter(Boolean);
-});
+/** 列表字段 desc 作导语；后台可另传 content[] 追加正文段落（与案例详情一致） */
+const articleLead = computed(() => String(newsDescForLang(article.value, lang.value) || "").trim());
+
+const detailParagraphs = computed(() => newsContentForLang(article.value, lang.value));
 
 const bodySegments = computed(() => {
-  const raw = article.value?.contentPortable;
+  const raw = newsPortableForLang(article.value, lang.value);
   if (!raw || !Array.isArray(raw)) return [];
   return portableTextToArticleSegments(raw);
 });

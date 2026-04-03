@@ -1,3 +1,4 @@
+import { cmsPickStr } from "./cmsLocale.js";
 import { BUSINESS_TAB_IMAGES, BUSINESS_FEATURE_COUNTS } from "./businessPage.js";
 
 /** 方案列表卡片简介（与服务支持卡片风格一致，后台可整体替换文案） */
@@ -113,17 +114,39 @@ export function mergeBusinessSolutionsSanityIntoDefaults(doc) {
     const introRaw = block.introduction;
     const introduction =
       introRaw != null && String(introRaw).trim() ? String(introRaw).trim() : "";
+    const introductionEnRaw = block.introductionEn;
+    const introductionEn =
+      introductionEnRaw != null && String(introductionEnRaw).trim()
+        ? String(introductionEnRaw).trim()
+        : "";
+    const introductionZhHantRaw = block.introductionZhHant;
+    const introductionZhHant =
+      introductionZhHantRaw != null && String(introductionZhHantRaw).trim()
+        ? String(introductionZhHantRaw).trim()
+        : "";
     const refs = Array.isArray(block.refs) ? block.refs.filter((r) => r && r._id) : [];
     const modules =
       refs.length > 0
         ? refs.map((row, idx) => {
             const excerptTrim = String(row.excerpt || "").trim();
+            const excerptEnTrim = String(row.excerptEn || "").trim();
+            const excerptZhHantTrim = String(row.excerptZhHant || "").trim();
             const desc = excerptTrim || truncateSolCardDesc(row.bodyText);
+            const descEnRaw = excerptEnTrim || truncateSolCardDesc(row.bodyTextEn);
+            const descZhHantRaw = excerptZhHantTrim || truncateSolCardDesc(row.bodyTextZhHant);
+            const descEn = String(descEnRaw || "").trim() || undefined;
+            const descZhHant = String(descZhHantRaw || "").trim() || undefined;
+            const titleEn = String(row.titleEn || "").trim() || undefined;
+            const titleZhHant = String(row.titleZhHant || "").trim() || undefined;
             return {
               id: String(row._id),
               titleKey: def.modules[idx]?.titleKey || `biz_p${i + 1}_f${idx + 1}`,
               title: String(row.title || "").trim(),
+              titleEn,
+              titleZhHant,
               desc,
+              descEn,
+              descZhHant,
               detailKind: "support",
               supportId: String(row._id),
             };
@@ -132,6 +155,8 @@ export function mergeBusinessSolutionsSanityIntoDefaults(doc) {
     return {
       ...def,
       ...(introduction ? { introduction } : {}),
+      ...(introductionEn ? { introductionEn } : {}),
+      ...(introductionZhHant ? { introductionZhHant } : {}),
       modules,
     };
   });
@@ -144,7 +169,11 @@ function normalizeCategoryModule(m, pid, index) {
     id: String(m.id || `${pid}-f${index + 1}`),
     titleKey: m.titleKey || `biz_p${n}_f${index + 1}`,
     title: String(m.title || "").trim(),
+    titleEn: m.titleEn,
+    titleZhHant: m.titleZhHant,
     desc: String(m.desc || SOLUTION_MODULE_CARD_DESC),
+    descEn: m.descEn,
+    descZhHant: m.descZhHant,
     detailKind,
     supportId: m.supportId ? String(m.supportId) : "",
   };
@@ -156,6 +185,12 @@ function normalizeCategory(c, idx) {
   const modules = Array.isArray(c.modules) ? c.modules.map((m, i) => normalizeCategoryModule(m, pid, i)) : [];
   const introRaw = c.introduction;
   const introduction = introRaw != null && String(introRaw).trim() ? String(introRaw).trim() : "";
+  const introductionEn =
+    c.introductionEn != null && String(c.introductionEn).trim() ? String(c.introductionEn).trim() : "";
+  const introductionZhHant =
+    c.introductionZhHant != null && String(c.introductionZhHant).trim()
+      ? String(c.introductionZhHant).trim()
+      : "";
   return {
     id: pid,
     tabIndex,
@@ -163,6 +198,8 @@ function normalizeCategory(c, idx) {
     introKey: c.introKey || `biz_p${tabIndex + 1}_desc`,
     image: c.image || BUSINESS_TAB_IMAGES[tabIndex] || BUSINESS_TAB_IMAGES[0],
     ...(introduction ? { introduction } : {}),
+    ...(introductionEn ? { introductionEn } : {}),
+    ...(introductionZhHant ? { introductionZhHant } : {}),
     modules,
   };
 }
@@ -210,6 +247,18 @@ export function resolveBusinessSolutionCategories() {
 }
 
 export const BUSINESS_SOLUTION_CATEGORIES = resolveBusinessSolutionCategories();
+
+export function bizSolutionIntroForLang(cat, lang) {
+  return cmsPickStr(cat.introduction, cat.introductionEn, cat.introductionZhHant, lang);
+}
+
+export function bizModuleTitleForLang(mod, lang) {
+  return cmsPickStr(mod.title, mod.titleEn, mod.titleZhHant, lang);
+}
+
+export function bizModuleDescForLang(mod, lang) {
+  return cmsPickStr(mod.desc, mod.descEn, mod.descZhHant, lang);
+}
 
 /** 同一方案分类下的详情顺序（用于上一篇 / 下一篇） */
 export function solutionIdsInCategory(categoryId) {

@@ -1,10 +1,31 @@
 /**
  * 合作伙伴页：Logo 行业筛选 + 典型案例（文案与配图为演示数据，可对接 CMS）
  */
+import { cmsPickStr, cmsPickParagraphs, cmsPickPortable } from "./cmsLocale.js";
 import {
   buildPartnerLogoItems,
   buildPartnerLogosHomePreview,
 } from "./partnersCatalog.js";
+
+export function caseTitleForLang(item, lang) {
+  if (!item) return "";
+  return cmsPickStr(item.title, item.titleEn, item.titleZhHant, lang);
+}
+
+export function caseSummaryForLang(item, lang) {
+  if (!item) return "";
+  return cmsPickStr(item.summary, item.summaryEn, item.summaryZhHant, lang);
+}
+
+export function caseContentForLang(item, lang) {
+  if (!item) return [];
+  return cmsPickParagraphs(item.content, item.contentEn, item.contentZhHant, lang);
+}
+
+export function casePortableForLang(item, lang) {
+  if (!item) return null;
+  return cmsPickPortable(item.contentPortable, item.contentPortableEn, item.contentPortableZhHant, lang);
+}
 
 export const PARTNER_LOGO_ITEMS = buildPartnerLogoItems();
 export const PARTNER_LOGOS_HOME_PREVIEW =
@@ -144,6 +165,14 @@ function normalizePartnerCase(item, index) {
     image: item.image || CASE_IMG,
     content: Array.isArray(item.content) ? item.content : [],
     contentPortable: Array.isArray(item.contentPortable) ? item.contentPortable : null,
+    titleEn: item.titleEn,
+    titleZhHant: item.titleZhHant,
+    summaryEn: item.summaryEn,
+    summaryZhHant: item.summaryZhHant,
+    contentEn: Array.isArray(item.contentEn) ? item.contentEn : null,
+    contentZhHant: Array.isArray(item.contentZhHant) ? item.contentZhHant : null,
+    contentPortableEn: Array.isArray(item.contentPortableEn) ? item.contentPortableEn : null,
+    contentPortableZhHant: Array.isArray(item.contentPortableZhHant) ? item.contentPortableZhHant : null,
     /** Sanity 等 CMS 来源：详情页只展示正文段落，不拼接演示模板 */
     cmsContentOnly: Boolean(item.cmsContentOnly),
   };

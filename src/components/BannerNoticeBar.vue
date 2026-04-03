@@ -41,12 +41,13 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, inject, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate, newsTitleForLang, newsDescForLang } from "../cms/news.js";
 
 const route = useRoute();
+const lang = inject("hisunLang", ref("zh"));
 
 const NOTICE_INTERVAL_MS = 5000;
 const noticeIndex = ref(0);
@@ -68,7 +69,7 @@ const currentNotice = computed(() => {
 const currentNoticeLine = computed(() => {
   const notice = currentNotice.value;
   if (!notice) return "";
-  return `${notice.title}：${notice.desc}`;
+  return `${newsTitleForLang(notice, lang.value)}：${newsDescForLang(notice, lang.value)}`;
 });
 
 /** 首页 banner 与走进高阳页均展示；详情来源与面包屑随当前路由区分 */

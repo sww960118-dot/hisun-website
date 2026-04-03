@@ -27,7 +27,7 @@
           <article class="min-w-0 flex-1">
             <div v-if="detail" class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/90 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/50">
               <div class="p-6 sm:p-8">
-                <h1 class="text-[28px] font-bold leading-snug text-zinc-900 dark:text-white">{{ detail.title }}</h1>
+                <h1 class="text-[28px] font-bold leading-snug text-zinc-900 dark:text-white">{{ supportDetailTitleForLang(detail, lang) }}</h1>
                 <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-zinc-400">
                   <span>文章出处：{{ detail.source }}</span>
                   <span>网责任编辑：{{ detail.editor }}</span>
@@ -71,11 +71,11 @@
             <div v-if="detail" class="mt-6 rounded-2xl border border-zinc-200 bg-white/90 p-5 dark:border-zinc-700 dark:bg-zinc-900/40 sm:p-6">
               <div class="grid grid-cols-1 gap-3 text-[15px] text-zinc-700 dark:text-zinc-300">
                 <RouterLink v-if="prevDetail" :to="serviceDetailQuery(prevDetail.id)" class="transition hover:text-[#3d59ff]">
-                  上一篇：{{ prevDetail.title }}
+                  上一篇：{{ supportDetailTitleForLang(prevDetail, lang) }}
                 </RouterLink>
                 <span v-else class="text-zinc-400">上一篇：暂无</span>
                 <RouterLink v-if="nextDetail" :to="serviceDetailQuery(nextDetail.id)" class="transition hover:text-[#3d59ff]">
-                  下一篇：{{ nextDetail.title }}
+                  下一篇：{{ supportDetailTitleForLang(nextDetail, lang) }}
                 </RouterLink>
                 <span v-else class="text-zinc-400">下一篇：暂无</span>
               </div>
@@ -100,7 +100,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="block text-[15px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="mt-1 text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -122,7 +122,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -142,7 +142,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -156,17 +156,24 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject, ref } from "vue";
 import { useRoute } from "vue-router";
 import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
-import { getSupportDetailItems } from "../cms/supportPage.js";
+import { getNewsItems, compareNewsByPinnedThenDate, newsTitleForLang } from "../cms/news.js";
+import {
+  getSupportDetailItems,
+  supportDetailTitleForLang,
+  supportDetailDescForLang,
+  supportDetailContentForLang,
+  supportDetailPortableForLang,
+} from "../cms/supportPage.js";
 import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
 
 const route = useRoute();
+const lang = inject("hisunLang", ref("zh"));
 
 const newsCatalog = computed(() => {
   cmsTick.value;
@@ -198,16 +205,12 @@ const detail = computed(() => {
   return supportDetailList.value.find((x) => x.id === id) ?? null;
 });
 
-const detailLead = computed(() => String(detail.value?.desc || "").trim());
+const detailLead = computed(() => String(supportDetailDescForLang(detail.value, lang.value) || "").trim());
 
-const detailParagraphs = computed(() => {
-  const d = detail.value;
-  if (!d || !Array.isArray(d.content) || !d.content.length) return [];
-  return d.content.map((x) => String(x).trim()).filter(Boolean);
-});
+const detailParagraphs = computed(() => supportDetailContentForLang(detail.value, lang.value));
 
 const bodySegments = computed(() => {
-  const raw = detail.value?.contentPortable;
+  const raw = supportDetailPortableForLang(detail.value, lang.value);
   if (!raw || !Array.isArray(raw)) return [];
   return portableTextToArticleSegments(raw);
 });

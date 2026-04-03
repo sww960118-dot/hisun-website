@@ -26,7 +26,7 @@
           <article class="min-w-0 flex-1">
             <div v-if="activeCase" class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/90 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/50">
               <div class="p-6 sm:p-8">
-                <h1 class="text-[28px] font-bold leading-snug text-zinc-900 dark:text-white">{{ activeCase.title }}</h1>
+                <h1 class="text-[28px] font-bold leading-snug text-zinc-900 dark:text-white">{{ caseTitleForLang(activeCase, lang) }}</h1>
                 <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-zinc-400">
                   <span>文章出处：{{ activeCase.source }}</span>
                   <span>网责任编辑：{{ activeCase.editor }}</span>
@@ -34,10 +34,10 @@
                   <time>发布时间：{{ activeCase.publishDate }}</time>
                 </div>
                 <p
-                  v-if="!activeCase.cmsContentOnly && activeCase.summary"
+                  v-if="!activeCase.cmsContentOnly && caseSummaryForLang(activeCase, lang)"
                   class="mt-4 text-[15px] leading-8 text-zinc-600 dark:text-zinc-300"
                 >
-                  {{ activeCase.summary }}
+                  {{ caseSummaryForLang(activeCase, lang) }}
                 </p>
                 <ArticleBodySegments v-if="bodySegments.length" :segments="bodySegments" />
                 <p
@@ -72,7 +72,7 @@
                   :to="{ name: 'partners-case-detail', query: { id: prevCase.id, from: 'partners' } }"
                   class="transition hover:text-[#3d59ff]"
                 >
-                  上一篇：{{ prevCase.title }}
+                  上一篇：{{ caseTitleForLang(prevCase, lang) }}
                 </RouterLink>
                 <span v-else class="text-zinc-400">上一篇：暂无</span>
                 <RouterLink
@@ -80,7 +80,7 @@
                   :to="{ name: 'partners-case-detail', query: { id: nextCase.id, from: 'partners' } }"
                   class="transition hover:text-[#3d59ff]"
                 >
-                  下一篇：{{ nextCase.title }}
+                  下一篇：{{ caseTitleForLang(nextCase, lang) }}
                 </RouterLink>
                 <span v-else class="text-zinc-400">下一篇：暂无</span>
               </div>
@@ -105,7 +105,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="block text-[15px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="mt-1 text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -127,7 +127,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -147,7 +147,7 @@
                     :to="{ name: 'news-detail', query: { id: n.id, from: 'news', entry: 'nav' } }"
                     class="line-clamp-1 block text-[14px] leading-6 text-zinc-700 transition hover:text-[#3d59ff] dark:text-zinc-300 dark:hover:text-[#7c8cff]"
                   >
-                    {{ n.title }}
+                    {{ newsTitleForLang(n, lang) }}
                   </RouterLink>
                   <p class="text-[12px] text-zinc-400">阅读 {{ formatViews(n.views) }}</p>
                 </li>
@@ -161,16 +161,23 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject, ref } from "vue";
 import { useRoute } from "vue-router";
 import ArticleBodySegments from "../components/ArticleBodySegments.vue";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { portableTextToArticleSegments } from "../cms/portableTextRender.js";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
-import { getPartnerCaseArticles } from "../cms/partnersPage.js";
+import { getNewsItems, compareNewsByPinnedThenDate, newsTitleForLang } from "../cms/news.js";
+import {
+  getPartnerCaseArticles,
+  caseTitleForLang,
+  caseSummaryForLang,
+  caseContentForLang,
+  casePortableForLang,
+} from "../cms/partnersPage.js";
 
 const route = useRoute();
+const lang = inject("hisunLang", ref("zh"));
 
 const allCases = computed(() => {
   cmsTick.value;
@@ -209,12 +216,13 @@ const nextCase = computed(() => {
 const detailParagraphs = computed(() => {
   const c = activeCase.value;
   if (!c) return [];
-  if (c.cmsContentOnly && Array.isArray(c.content) && c.content.length) {
-    return c.content.map((x) => String(x).trim()).filter(Boolean);
+  if (c.cmsContentOnly) {
+    const lines = caseContentForLang(c, lang.value);
+    if (lines.length) return lines.map((x) => String(x).trim()).filter(Boolean);
   }
   return [
-    `项目聚焦于${c.title}，以可持续交付和分阶段上线为原则，兼顾业务连续性与技术演进。`,
-    `围绕“${c.summary}”这一目标，团队从架构设计、数据治理、运维保障三方面同步推进，并形成标准化实施方法。`,
+    `项目聚焦于${caseTitleForLang(c, lang.value)}，以可持续交付和分阶段上线为原则，兼顾业务连续性与技术演进。`,
+    `围绕“${caseSummaryForLang(c, lang.value)}”这一目标，团队从架构设计、数据治理、运维保障三方面同步推进，并形成标准化实施方法。`,
     "上线后系统在稳定性、处理效率与合规可审计性方面持续提升，为后续能力扩展打下了统一底座。",
     ...(Array.isArray(c.content) ? c.content : []),
   ];
@@ -223,7 +231,7 @@ const detailParagraphs = computed(() => {
 const bodySegments = computed(() => {
   const c = activeCase.value;
   if (!c?.cmsContentOnly) return [];
-  const raw = c.contentPortable;
+  const raw = casePortableForLang(c, lang.value);
   if (!raw || !Array.isArray(raw)) return [];
   return portableTextToArticleSegments(raw);
 });

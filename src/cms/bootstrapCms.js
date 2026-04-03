@@ -5,6 +5,18 @@
  */
 import { defaultHisunCms } from "./config.js";
 import { bumpCmsTick } from "./cmsTick.js";
+
+/** 新闻详情按需拉取全文后合并进 window.HISUN_CMS.newsItems */
+export function mergeNewsFullItemIntoCms(item) {
+  if (typeof window === "undefined" || !item?.id) return;
+  const arr = window.HISUN_CMS?.newsItems;
+  if (!Array.isArray(arr)) return;
+  const id = String(item.id);
+  const idx = arr.findIndex((x) => String(x?.id) === id);
+  if (idx >= 0) arr[idx] = { ...arr[idx], ...item };
+  else arr.push(item);
+  bumpCmsTick();
+}
 import {
   fetchSanityBusinessSolutionsConfig,
   fetchSanityJobPostings,
@@ -20,7 +32,7 @@ function dataUrl(name) {
 
 async function fetchJson(name) {
   try {
-    const res = await fetch(dataUrl(name), { cache: "no-store" });
+    const res = await fetch(dataUrl(name), { cache: "default" });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -30,9 +42,9 @@ async function fetchJson(name) {
 
 async function applySanityToWindow() {
   const settled = await Promise.allSettled([
-    fetchSanityNewsItems(),
-    fetchSanityPartnerCases(),
-    fetchSanitySupportMaintenance(),
+    fetchSanityNewsItems({ lite: true, limit: 40 }),
+    fetchSanityPartnerCases({ lite: true, limit: 40 }),
+    fetchSanitySupportMaintenance({ lite: true, limit: 80 }),
     fetchSanityJobPostings(),
     fetchSanityBusinessSolutionsConfig(),
   ]);

@@ -67,8 +67,8 @@
               <img :src="item.image" alt="" class="biz-news-list-card__img h-[170px] w-full object-cover transition duration-500" loading="lazy" />
             </div>
             <div class="mt-4">
-              <h3 class="biz-news-list-card__title text-[20px] font-medium leading-snug text-[#1f2937] dark:text-zinc-100">{{ item.title }}</h3>
-              <p class="mt-3 line-clamp-2 text-[12px] leading-relaxed text-zinc-500 dark:text-zinc-400">{{ item.desc }}</p>
+              <h3 class="biz-news-list-card__title text-[20px] font-medium leading-snug text-[#1f2937] dark:text-zinc-100">{{ newsTitleForLang(item, lang) }}</h3>
+              <p class="mt-3 line-clamp-2 text-[12px] leading-relaxed text-zinc-500 dark:text-zinc-400">{{ newsDescForLang(item, lang) }}</p>
               <div class="mt-2 flex items-center justify-between gap-2 text-[13px] text-zinc-400">
                 <time>{{ item.date }}</time>
                 <span>阅读 {{ formatViews(item.views) }}</span>
@@ -82,14 +82,15 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate, newsTitleForLang, newsDescForLang } from "../cms/news.js";
 
 const route = useRoute();
 const router = useRouter();
+const lang = inject("hisunLang", ref("zh"));
 
 const categoryTabs = [
   { value: "all", labelKey: "biz_hot_tab_all" },
