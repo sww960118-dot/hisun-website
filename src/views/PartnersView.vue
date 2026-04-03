@@ -32,7 +32,7 @@
       <!-- 包裹 Tab + Logo：sticky 仅在此区域内生效，滚过 Logo 区进入「典型案例」后不再吸顶 -->
       <div class="relative mt-8">
         <nav
-          class="sticky top-[64px] z-[90] border-y border-zinc-200/80 bg-zinc-50/95 backdrop-blur-xl dark:border-zinc-700 dark:bg-[#0b0d12]/95 lg:top-[72px]"
+          class="sticky top-[64px] z-[30] border-y border-zinc-200/80 bg-zinc-50/95 backdrop-blur-xl dark:border-zinc-700 dark:bg-[#0b0d12]/95 lg:top-[72px]"
           aria-label="客户行业筛选"
         >
           <div class="mx-auto flex max-w-[1200px] flex-wrap justify-center gap-2 px-4 py-3 sm:gap-3 sm:px-6">

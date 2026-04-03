@@ -707,6 +707,14 @@ body {
 .nav-dd .glass-nav {
   pointer-events: auto;
 }
+
+/* 主链与 glass-nav 之间留出可命中条带（仍在 nav-dd 内，不盖住 RouterLink），减少移入子菜单时误点下方 Banner */
+.nav-dd::before {
+  content: "";
+  display: block;
+  height: 8px;
+  pointer-events: auto;
+}
 .nav-link-main {
   transition: color 0.2s, background 0.2s;
 }

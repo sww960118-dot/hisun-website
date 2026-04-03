@@ -20,7 +20,7 @@
         <svg class="blob right-[15%] bottom-[12%] h-[180px] w-[180px] text-[#3d59ff]" viewBox="0 0 200 200" aria-hidden="true"><path fill="currentColor" d="M39.5,-67.8C53.1,-60.8,66.1,-50.5,74.3,-37.1C82.5,-23.7,86.1,-7.1,84.5,8.5C82.9,24.1,76.1,38.7,65.5,50.5C54.9,62.3,40.5,71.3,24.5,75.5C8.5,79.7,-9.1,79.1,-25.1,73.5C-41.1,67.9,-55.5,57.3,-66.5,43.5C-77.5,29.7,-85.1,12.7,-84.5,-4.5C-83.9,-21.7,-75.1,-38.1,-63.5,-50.5C-51.9,-62.9,-37.5,-71.3,-22.5,-75.5C-7.5,-79.7,8.1,-79.7,39.5,-67.8Z" transform="translate(100 100)"/></svg>
       </div>
     
-      <header class="glass-header sticky top-0 z-[100]">
+      <header class="glass-header sticky top-0 z-[200]">
         <div class="mx-auto flex min-h-[64px] max-w-[1200px] items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6 lg:min-h-[72px]">
           <RouterLink to="/" class="flex shrink-0 items-center" aria-label="Hi Sun">
         <img :src="'/img/logo_black.png'" alt="Hi Sun" width="160" height="40" class="h-9 w-auto max-h-10 max-w-[180px] object-contain dark:hidden" />
@@ -458,9 +458,9 @@
       </footer>
     
       <!-- 闂傚倷绀侀幉锟犳偡閵夆晛鍌ㄩ柡宥庡幖閻ら箖鏌涢锝嗙缂佺姵鐗楅妵鍕箳瀹ュ棛銈伴梺璋庡倻绐旈柡灞诲妼閳藉鈻庢惔婵嗩劉濠电偛顕慨鎾偋韫囨稑绀岄柡宥冨妼椤曡鲸绻涢崱妯虹仼妞わ腹鏅滅换娑氣偓娑欘焽閻﹪鏌ｉ鍌氬付閼挎劖銇勯弴妤€浜鹃梺璇″灠缁夌數绮悢鍝ョ瘈闁告洦鍙庡Σ鎾煟?闂傚倷绀侀崥瀣磿閹惰棄搴婇柤鑹扮堪娴滃綊鏌涢妷顔煎婵☆偅锕㈤幃宄扳枎韫囨搩浼岄梺琛″亾闁规儼濮ら悡銉︾箾閹寸儐鐒藉褎鐩幃妤€顫濋埀顒勫炊瑜忛悡鎴︽⒑閸涘﹤鐏熼柛濠冾殘缁牓宕卞▎鎰／?闂傚倷鐒﹂幃鍫曞磿閹惰棄纾婚柕鍫濐槸杩?-->
-      <div id="fabDock" class="fab-dock fixed right-2 top-1/2 z-[95] flex w-[58px] -translate-y-1/2 flex-col gap-2 sm:right-4" role="navigation" aria-label="快捷操作区" @click.stop>
+      <div id="fabDock" class="fab-dock fixed right-2 top-1/2 z-[90] flex w-[58px] -translate-y-1/2 flex-col gap-2 sm:right-4" role="navigation" aria-label="快捷操作区" @click.stop>
         <div class="relative">
-          <div id="fabQrPanel" class="absolute right-[calc(100%+10px)] top-1/2 z-[96] w-[200px] max-w-[calc(100vw-5rem)] rounded-2xl p-4 shadow-2xl ring-1 ring-white/25 dark:ring-white/10" :class="{ 'fab-qr-open': fabQrOpen }">
+          <div id="fabQrPanel" class="absolute right-[calc(100%+10px)] top-1/2 z-[91] w-[200px] max-w-[calc(100vw-5rem)] rounded-2xl p-4 shadow-2xl ring-1 ring-white/25 dark:ring-white/10" :class="{ 'fab-qr-open': fabQrOpen }">
             <img id="fabQrImg" :src="fabQrSrc" alt="" width="160" height="160" class="mx-auto h-36 w-36 rounded-lg object-cover sm:h-40 sm:w-40" loading="lazy" decoding="async" data-qr-placeholder="1" />
             <p class="hs-text-footer mt-3 text-center text-zinc-500 dark:text-zinc-400" data-i18n="fab_qr_hint">微信扫码 · 联系我们</p>
           </div>
@@ -479,7 +479,7 @@
           <span class="hs-text-fab max-w-[52px] text-center" data-i18n="fab_contact">联系</span>
         </RouterLink>
       </div>
-      <button type="button" id="fabToTop" class="hs-text-fab fab-btn-square fixed right-2 bottom-[50px] z-[95] flex flex-col items-center justify-center gap-0.5 rounded-2xl border border-zinc-600/80 bg-black/40 uppercase tracking-wide text-white shadow-lg transition hover:bg-zinc-800 sm:right-4" aria-label="回到顶部" @click="scrollToTop">
+      <button type="button" id="fabToTop" class="hs-text-fab fab-btn-square fixed right-2 bottom-[50px] z-[90] flex flex-col items-center justify-center gap-0.5 rounded-2xl border border-zinc-600/80 bg-black/40 uppercase tracking-wide text-white shadow-lg transition hover:bg-zinc-800 sm:right-4" aria-label="回到顶部" @click="scrollToTop">
         <svg class="icon-tone h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
         <span>TOP</span>
       </button>

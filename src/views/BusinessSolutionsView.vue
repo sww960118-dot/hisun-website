@@ -25,7 +25,7 @@
 
     <!-- 与「走进高阳」子导航同构：粘性条 + 居中胶囊 Tab -->
     <nav
-      class="sticky top-[64px] z-[90] border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-[#12151f]/85 lg:top-[72px]"
+      class="sticky top-[64px] z-[30] border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800 dark:bg-[#12151f]/85 lg:top-[72px]"
       aria-label="解决方案分类"
     >
       <div class="mx-auto flex max-w-[1200px] flex-wrap justify-center gap-2 px-4 py-3 sm:gap-3 sm:px-6">
