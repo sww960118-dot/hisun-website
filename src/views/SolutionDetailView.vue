@@ -170,7 +170,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
 import { SOLUTION_DETAILS } from "../cms/businessSolutionsPage.js";
 
 const route = useRoute();
@@ -222,16 +222,12 @@ const nextSolution = computed(() => {
 
 const detailParagraphs = computed(() => activeSolution.value?.content ?? []);
 
-function toDateValue(date) {
-  return new Date(date).getTime() || 0;
-}
-
 const hotArticles = computed(() =>
   [...newsCatalog.value].sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0)).slice(0, 5)
 );
 
 const latestArticles = computed(() =>
-  [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 20)
+  [...newsCatalog.value].sort(compareNewsByPinnedThenDate).slice(0, 20)
 );
 
 function normalizeText(s) {
@@ -268,10 +264,10 @@ const relatedNews = computed(() => {
       sim: overlapRatio(source, `${n.title}${n.desc}`),
     }))
     .filter((n) => n.sim >= 0.22)
-    .sort((a, b) => b.sim - a.sim || toDateValue(b.date) - toDateValue(a.date))
+    .sort((a, b) => b.sim - a.sim || compareNewsByPinnedThenDate(a, b))
     .slice(0, 6);
   if (filtered.length > 0) return filtered;
-  return [...newsCatalog.value].sort((a, b) => toDateValue(b.date) - toDateValue(a.date)).slice(0, 6);
+  return [...newsCatalog.value].sort(compareNewsByPinnedThenDate).slice(0, 6);
 });
 
 function formatViews(value) {

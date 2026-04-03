@@ -341,7 +341,7 @@ import PartnerLogoHoverCard from "../components/PartnerLogoHoverCard.vue";
 import { cmsTick } from "../cms/cmsTick.js";
 import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
 import { I18N } from "../i18n.js";
-import { getNewsItems } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
 import { PARTNER_LOGOS_HOME_PREVIEW } from "../cms/partnersPage.js";
 
 /** 与解决方案页五个 Tab 一致；数据来自 Sanity「解决方案页配置」中的简介 + 默认 i18n */
@@ -382,12 +382,7 @@ const newsListMoreHref = `${(import.meta.env.BASE_URL || "/").replace(/\/$/, "")
 const homeNewsItems = computed(() => {
   cmsTick.value;
   const list = getNewsItems();
-  const sorted = [...list].sort((a, b) => {
-    const ta = new Date(a.date).getTime();
-    const tb = new Date(b.date).getTime();
-    return (Number.isFinite(tb) ? tb : 0) - (Number.isFinite(ta) ? ta : 0);
-  });
-  return sorted.slice(0, 3);
+  return [...list].sort(compareNewsByPinnedThenDate).slice(0, 3);
 });
 
 const BANNER_AUTO_MS = 3000;

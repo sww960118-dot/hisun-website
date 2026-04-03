@@ -87,7 +87,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import PageHeroBanner from "../components/PageHeroBanner.vue";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -123,7 +123,7 @@ const filteredArticles = computed(() => {
   const items = getNewsItems();
   const base =
     activeCategory.value === "all" ? items : items.filter((item) => item.category === activeCategory.value);
-  return [...base].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return [...base].sort(compareNewsByPinnedThenDate);
 });
 
 /** 切换分类时递增，配合 :key 触发整卡重新入场动画 */

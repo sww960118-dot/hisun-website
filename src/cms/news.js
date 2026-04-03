@@ -3,6 +3,18 @@ import { sanityDateToYmdChina } from "./sanity.js";
 
 const NEWS_CATEGORIES = new Set(["notice", "headline", "staff"]);
 
+/** 置顶优先，其次按日期新→旧（与 Sanity `order(pinned desc, publishedAt desc)` 一致） */
+export function compareNewsByPinnedThenDate(a, b) {
+  const pa = a?.pinned ? 1 : 0;
+  const pb = b?.pinned ? 1 : 0;
+  if (pb !== pa) return pb - pa;
+  const ta = new Date(a?.date || 0).getTime();
+  const tb = new Date(b?.date || 0).getTime();
+  const na = Number.isFinite(ta) ? ta : 0;
+  const nb = Number.isFinite(tb) ? tb : 0;
+  return nb - na;
+}
+
 /** 列表/详情无封面且无正文图时的占位（须存在于 public） */
 export function newsPlaceholderImageUrl() {
   const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
@@ -21,6 +33,7 @@ function normalizeNewsItem(item, index) {
   return {
     id: String(item?.id || `news-${index + 1}`),
     category: cat,
+    pinned: Boolean(item?.pinned),
     date: dateRaw || "2026-01-01",
     views: Number(item?.views) || 0,
     title: String(item?.title || ""),

@@ -381,7 +381,7 @@ import { PARTNER_LOGOS } from "../cms/partners.js";
 import { BUSINESS_TAB_IMAGES } from "../cms/businessPage.js";
 import { resolveBusinessSolutionCategories } from "../cms/businessSolutionsPage.js";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
 import { I18N } from "../i18n.js";
 
 const TAB_COUNT = 5;
@@ -427,7 +427,7 @@ watch(cmsTick, () => nextTick(() => refreshBizSolutionsI18n()));
 watch(activeTab, () => nextTick(() => refreshBizSolutionsI18n()));
 
 const hotFilteredArticles = computed(() =>
-  [...hotNewsCards.value].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  [...hotNewsCards.value].sort(compareNewsByPinnedThenDate)
 );
 
 const hotRowArticles = computed(() => {

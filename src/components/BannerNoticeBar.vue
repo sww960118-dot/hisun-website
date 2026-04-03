@@ -44,7 +44,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { cmsTick } from "../cms/cmsTick.js";
-import { getNewsItems } from "../cms/news.js";
+import { getNewsItems, compareNewsByPinnedThenDate } from "../cms/news.js";
 
 const route = useRoute();
 
@@ -56,7 +56,7 @@ const noticeNews = computed(() => {
   cmsTick.value;
   return getNewsItems()
     .filter((item) => item.category === "notice")
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort(compareNewsByPinnedThenDate);
 });
 
 const currentNotice = computed(() => {
