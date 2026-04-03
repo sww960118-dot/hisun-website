@@ -43,6 +43,20 @@ function splitPortableTextToParagraphs(text) {
     .filter(Boolean);
 }
 
+/** 按正文块顺序取第一张图（Sanity image 或 embedImage 外链） */
+function firstImageUrlFromPortable(blocks) {
+  if (!Array.isArray(blocks)) return "";
+  for (const b of blocks) {
+    if (!b || typeof b !== "object") continue;
+    if (b._type === "image") {
+      const u = b.url || b.asset?.url;
+      if (u) return String(u).trim();
+    }
+    if (b._type === "embedImage" && b.url) return String(b.url).trim();
+  }
+  return "";
+}
+
 /**
  * 正文 Portable Text：显式展开 image / embedImage / block，避免仅用 `@` 时 embedImage 在 CDN 上丢失。
  */
@@ -83,7 +97,7 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
     "views": 0,
     "title": coalesce(title, ""),
     "desc": coalesce(excerpt, ""),
-    "image": coalesce(coverImage.asset->url, ""),
+    "image": coverImage.asset->url,
     "editor": coalesce(editor, ""),
     "contentText": pt::text(content),
     "contentPortable": ${GROQ_CONTENT_PORTABLE}
@@ -96,8 +110,12 @@ export async function fetchSanityNewsItems({ limit = 50 } = {}) {
     let desc = String(it?.desc ?? "").trim();
     if (!desc && teaser) desc = truncateCaseCardSummary(teaser);
     const editor = String(it?.editor ?? "").trim() || "高阳金信";
+    const coverUrl = it?.image != null && it.image !== "" ? String(it.image).trim() : "";
+    const bodyFirstUrl = firstImageUrlFromPortable(it?.contentPortable);
+    const image = coverUrl || bodyFirstUrl || "";
     return {
       ...it,
+      image,
       desc,
       editor,
       content: paragraphs,

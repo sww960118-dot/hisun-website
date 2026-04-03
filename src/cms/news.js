@@ -2,9 +2,17 @@ import { DEFAULT_NEWS_ITEMS } from "./news.defaults.js";
 
 const NEWS_CATEGORIES = new Set(["notice", "headline", "staff"]);
 
+/** 列表/详情无封面且无正文图时的占位（public/img/news-placeholder.png） */
+export function newsPlaceholderImageUrl() {
+  const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+  return `${base}img/news-placeholder.png`.replace(/([^:])\/{2,}/g, "$1/");
+}
+
 function normalizeNewsItem(item, index) {
   const cat = NEWS_CATEGORIES.has(item?.category) ? item.category : "notice";
   const dateRaw = String(item?.date ?? "").slice(0, 10);
+  let image = String(item?.image || "").trim();
+  if (!image) image = newsPlaceholderImageUrl();
   return {
     id: String(item?.id || `news-${index + 1}`),
     category: cat,
@@ -12,7 +20,7 @@ function normalizeNewsItem(item, index) {
     views: Number(item?.views) || 0,
     title: String(item?.title || ""),
     desc: String(item?.desc ?? item?.summary ?? ""),
-    image: String(item?.image || ""),
+    image,
     source: item?.source,
     editor: (() => {
       const e = item?.editor;
