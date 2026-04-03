@@ -23,19 +23,32 @@
         </div>
 
         <div class="join-filters reveal mt-10 rounded-xl border border-zinc-200 bg-white/90 p-4 shadow-sm dark:border-zinc-700 dark:bg-[#0f172a]/90 sm:p-5">
-          <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <UiSelect v-model="selectedType" placeholder="工作类型" :options="typeOptions" />
-            <UiSelect v-model="selectedDegree" placeholder="学历" :options="degreeOptions" />
-            <UiSelect v-model="selectedLocation" placeholder="工作地点" :options="locationOptions" />
-            <UiSearchField
-              v-model="keyword"
-              placeholder="搜索岗位名称"
-              :force-glow="isSearchGlow"
-              :show-empty-state="showEmptyResult"
-              empty-text="暂无匹配岗位，请更换关键词或筛选条件"
-              @search="pulseSearchGlow"
-            />
-            <p class="text-[14px] text-zinc-600 dark:text-zinc-300">人力资源部电子邮箱地址：bihr@hisuntech.com</p>
+          <div class="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
+            <div class="join-filter-field w-full min-w-0 sm:w-auto sm:min-w-[168px]">
+              <span class="join-filter-label mb-1 block text-left text-[13px] font-medium text-zinc-600 dark:text-zinc-400">工作类型</span>
+              <UiSelect v-model="selectedType" placeholder="全部" :options="jobTypeFilterOptions" />
+            </div>
+            <div class="join-filter-field w-full min-w-0 sm:w-auto sm:min-w-[168px]">
+              <span class="join-filter-label mb-1 block text-left text-[13px] font-medium text-zinc-600 dark:text-zinc-400">学历</span>
+              <UiSelect v-model="selectedDegree" placeholder="全部" :options="degreeFilterOptions" />
+            </div>
+            <div class="join-filter-field w-full min-w-0 sm:w-auto sm:min-w-[168px]">
+              <span class="join-filter-label mb-1 block text-left text-[13px] font-medium text-zinc-600 dark:text-zinc-400">工作地点</span>
+              <UiSelect v-model="selectedLocation" placeholder="全部" :options="locationFilterOptions" />
+            </div>
+            <div class="w-full min-w-0 flex-1 lg:min-w-[240px] lg:max-w-[360px] lg:pt-[17px]">
+              <UiSearchField
+                v-model="keyword"
+                placeholder="搜索岗位名称"
+                :force-glow="isSearchGlow"
+                :show-empty-state="showEmptyResult"
+                empty-text="暂无匹配岗位，请更换关键词或筛选条件"
+                @search="pulseSearchGlow"
+              />
+            </div>
+            <p class="text-[14px] leading-snug text-zinc-600 dark:text-zinc-300 lg:max-w-[280px] lg:shrink-0 lg:pt-[17px]">
+              人力资源部电子邮箱地址：bihr@hisuntech.com
+            </p>
           </div>
         </div>
 
@@ -108,14 +121,42 @@ const selectedLocation = ref("");
 const isSearchGlow = ref(false);
 const expandedJobId = ref("");
 
-function optionsWithAll(values) {
-  const uniq = [...new Set(values.filter(Boolean))];
-  return [{ label: "全部", value: "" }, ...uniq.map((v) => ({ label: v, value: v }))];
-}
+const ALL_OPT = { label: "全部", value: "" };
 
-const typeOptions = computed(() => optionsWithAll(jobs.map((x) => x.type)));
-const degreeOptions = computed(() => optionsWithAll(jobs.map((x) => x.degree)));
-const locationOptions = computed(() => optionsWithAll(jobs.map((x) => x.location)));
+const jobTypeFilterOptions = [
+  ALL_OPT,
+  { label: "开发工程师", value: "开发工程师" },
+  { label: "架构工程师", value: "架构工程师" },
+  { label: "测试工程师", value: "测试工程师" },
+  { label: "数据模型专家", value: "数据模型专家" },
+  { label: "业务需求分析师", value: "业务需求分析师" },
+  { label: "项目经理", value: "项目经理" },
+  { label: "业务员", value: "业务员" },
+  { label: "行政文员", value: "行政文员" },
+  { label: "助理", value: "助理" },
+  { label: "其他", value: "其他" },
+];
+
+const degreeFilterOptions = [
+  ALL_OPT,
+  { label: "高中及以上", value: "高中及以上" },
+  { label: "大专及以上", value: "大专及以上" },
+  { label: "本科及以上", value: "本科及以上" },
+  { label: "硕士及以上", value: "硕士及以上" },
+  { label: "博士及以上", value: "博士及以上" },
+];
+
+const locationFilterOptions = [
+  ALL_OPT,
+  { label: "北京", value: "北京" },
+  { label: "上海", value: "上海" },
+  { label: "深圳", value: "深圳" },
+  { label: "广州", value: "广州" },
+  { label: "成都", value: "成都" },
+  { label: "济南", value: "济南" },
+  { label: "佛山", value: "佛山" },
+  { label: "香港", value: "香港" },
+];
 
 const filteredJobs = computed(() =>
   jobs.filter((job) => {
@@ -127,7 +168,12 @@ const filteredJobs = computed(() =>
   })
 );
 
-const showEmptyResult = computed(() => keyword.value.trim().length > 0 && filteredJobs.value.length === 0);
+const showEmptyResult = computed(() => {
+  if (filteredJobs.value.length > 0) return false;
+  const hasKeyword = keyword.value.trim().length > 0;
+  const hasFilter = Boolean(selectedType.value || selectedDegree.value || selectedLocation.value);
+  return hasKeyword || hasFilter;
+});
 
 watch(filteredJobs, (list) => {
   if (!list.some((job) => job.id === expandedJobId.value)) {

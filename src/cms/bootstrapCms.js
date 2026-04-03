@@ -5,6 +5,7 @@
  */
 import { defaultHisunCms } from "./config.js";
 import {
+  fetchSanityJobPostings,
   fetchSanityNewsItems,
   fetchSanityPartnerCases,
   fetchSanitySupportMaintenance,
@@ -31,10 +32,11 @@ export async function prefetchCmsData() {
   window.HISUN_CMS = { ...defaultHisunCms, ...window.HISUN_CMS };
 
   // 1) 先尝试从 Sanity 拉取（成功则优先使用）
-  const [sanityNews, sanityCases, sanitySupport] = await Promise.all([
+  const [sanityNews, sanityCases, sanitySupport, sanityJobs] = await Promise.all([
     fetchSanityNewsItems(),
     fetchSanityPartnerCases(),
     fetchSanitySupportMaintenance(),
+    fetchSanityJobPostings(),
   ]);
   if (Array.isArray(sanityNews) && sanityNews.length > 0) {
     window.HISUN_CMS.newsItems = sanityNews;
@@ -45,6 +47,9 @@ export async function prefetchCmsData() {
   if (sanitySupport?.sections && sanitySupport?.details?.length) {
     window.HISUN_CMS.supportSections = sanitySupport.sections;
     window.HISUN_CMS.supportDetails = sanitySupport.details;
+  }
+  if (Array.isArray(sanityJobs) && sanityJobs.length > 0) {
+    window.HISUN_CMS.joinJobs = sanityJobs;
   }
 
   // 2) 如果 Sanity 没有数据，再回退到静态 JSON

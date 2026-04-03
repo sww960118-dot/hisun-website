@@ -168,7 +168,7 @@ const article = computed(() => {
 });
 
 const articleSource = computed(() => article.value?.source ?? "高阳金信官网");
-const articleEditor = computed(() => article.value?.editor ?? "编辑部");
+const articleEditor = computed(() => article.value?.editor ?? "高阳金信");
 
 /** 列表字段 desc 作导语；后台可另传 content[] 追加正文段落（与案例详情一致） */
 const articleLead = computed(() => String(article.value?.desc || "").trim());
