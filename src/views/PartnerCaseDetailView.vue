@@ -25,7 +25,6 @@
         <div class="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
           <article class="min-w-0 flex-1">
             <div v-if="activeCase" class="overflow-hidden rounded-2xl border border-zinc-200 bg-white/90 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/50">
-              <img :src="activeCase.image" alt="" class="h-[260px] w-full object-cover sm:h-[360px]" loading="lazy" />
               <div class="p-6 sm:p-8">
                 <h1 class="text-[28px] font-bold leading-snug text-zinc-900 dark:text-white">{{ activeCase.title }}</h1>
                 <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-zinc-400">
