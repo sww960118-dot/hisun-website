@@ -16,11 +16,25 @@ const jsonHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+function getWriteToken(env) {
+  const raw = env?.SANITY_WRITE_TOKEN ?? env?.sanity_write_token;
+  return String(raw || "").trim();
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
 
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: jsonHeaders });
+  }
+
+  /** GET：仅用于自检（不返回任何密钥），浏览器打开 /api/contact 可看 Token 是否已注入到 Functions */
+  if (request.method === "GET") {
+    const has = Boolean(getWriteToken(env));
+    return new Response(JSON.stringify({ ok: true, writeTokenConfigured: has }), {
+      status: 200,
+      headers: jsonHeaders,
+    });
   }
 
   if (request.method !== "POST") {
@@ -30,7 +44,7 @@ export async function onRequest(context) {
     });
   }
 
-  const token = env.SANITY_WRITE_TOKEN;
+  const token = getWriteToken(env);
   const projectId = env.SANITY_PROJECT_ID || "gj7kf1f4";
   const dataset = env.SANITY_DATASET || "production";
 
