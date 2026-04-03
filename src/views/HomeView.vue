@@ -144,22 +144,26 @@
                   height="320"
                 />
               </div>
-              <div class="card-bolt-body flex flex-1 flex-col items-start rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80">
-                <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" :data-i18n="homeBizTitleI18n(cat)"></h3>
-                <p
-                  v-if="cat.introduction"
-                  class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400"
-                >
-                  {{ cat.introduction }}
-                </p>
-                <p
-                  v-else
-                  class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400"
-                  :data-i18n="homeBizIntroI18n(cat)"
-                ></p>
+              <div
+                class="card-bolt-body flex flex-1 flex-col items-start gap-4 rounded-b-2xl border-t border-zinc-100/90 px-4 pb-4 pt-3 text-left dark:border-zinc-700/80"
+              >
+                <div class="flex min-h-0 w-full flex-1 flex-col items-start">
+                  <h3 class="hs-text-card-title text-[#0f172a] dark:text-white" :data-i18n="homeBizTitleI18n(cat)"></h3>
+                  <p
+                    v-if="cat.introduction"
+                    class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400"
+                  >
+                    {{ cat.introduction }}
+                  </p>
+                  <p
+                    v-else
+                    class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400"
+                    :data-i18n="homeBizIntroI18n(cat)"
+                  ></p>
+                </div>
                 <RouterLink
                   :to="{ name: 'business-solutions', query: { tab: String(cat.tabIndex) } }"
-                  class="hs-text-btn-ghost biz-card-btn mt-auto inline-flex w-fit justify-center rounded-lg border border-[#3d59ff]/35 px-4 py-2 text-[#1a1a1a] no-underline transition hover:bg-black/[0.04] dark:border-white/30 dark:text-white dark:hover:bg-white/10"
+                  class="hs-text-btn-ghost biz-card-btn inline-flex w-fit shrink-0 justify-center rounded-lg border border-[#3d59ff]/35 px-4 py-2 text-[#1a1a1a] no-underline transition hover:bg-black/[0.04] dark:border-white/30 dark:text-white dark:hover:bg-white/10"
                 >
                   <span data-i18n="btn_detail">查看详情</span>
                 </RouterLink>
@@ -273,7 +277,7 @@
                 </div>
                 <div class="card-bolt-body relative flex flex-1 flex-col justify-center items-start rounded-b-2xl border-t border-zinc-100/90 pl-4 pr-20 pb-4 pt-3 text-left dark:border-zinc-700/80">
                   <h3 class="hs-text-card-title text-[#0f172a] dark:text-white">{{ item.title }}</h3>
-                  <p class="hs-text-body mt-1.5 line-clamp-4 text-[#666666] dark:text-zinc-400">{{ item.desc }}</p>
+                  <p class="hs-text-body mt-1.5 line-clamp-2 text-[#666666] dark:text-zinc-400">{{ item.desc }}</p>
                   <time class="mt-2 text-[13px] text-zinc-400">{{ item.date }}</time>
                   <div class="news-arrow-liquid group-hover:!text-white absolute right-6 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border transition-transform duration-200" aria-hidden="true">
                     <svg class="icon-tone h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>

@@ -82,9 +82,9 @@
             <div
               class="overflow-hidden rounded-xl border border-zinc-200 bg-[#eef0f3] shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:border-zinc-600 dark:bg-zinc-800/90"
             >
-              <div class="grid grid-cols-1 gap-0 lg:min-h-[280px] lg:grid-cols-2">
+              <div class="grid grid-cols-1 gap-0 lg:grid-cols-2 lg:items-stretch">
                 <div
-                  class="flex flex-col justify-center bg-[#f4f5f7] text-left lg:bg-[#f4f5f7] pt-8 pl-8 pr-6 pb-8 dark:bg-[#12151f] sm:pr-8 sm:pb-10"
+                  class="flex min-h-0 flex-col justify-start bg-[#f4f5f7] text-left lg:bg-[#f4f5f7] pt-8 pl-8 pr-6 pb-8 dark:bg-[#12151f] sm:pr-8 sm:pb-10"
                 >
                   <h3
                     class="text-xl font-bold leading-snug text-[#0f172a] sm:text-2xl dark:text-white"
@@ -92,7 +92,7 @@
                   ></h3>
                   <p
                     v-if="currentBizCategory.introduction"
-                    class="hs-text-body mt-4 line-clamp-2 text-[15px] leading-relaxed text-[#4b5563] dark:text-zinc-400"
+                    class="hs-text-body mt-4 text-[15px] leading-relaxed text-[#4b5563] dark:text-zinc-400"
                   >
                     {{ currentBizCategory.introduction }}
                   </p>
@@ -115,7 +115,7 @@
                   <img
                     :src="currentImage"
                     alt=""
-                    class="h-full min-h-[220px] w-full object-cover lg:min-h-full"
+                    class="h-full min-h-[220px] w-full object-cover lg:absolute lg:inset-0 lg:h-full lg:min-h-0 lg:w-full"
                     loading="lazy"
                     width="800"
                     height="520"
