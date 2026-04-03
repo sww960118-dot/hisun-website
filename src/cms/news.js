@@ -1,4 +1,5 @@
 import { DEFAULT_NEWS_ITEMS } from "./news.defaults.js";
+import { sanityDateToYmdChina } from "./sanity.js";
 
 const NEWS_CATEGORIES = new Set(["notice", "headline", "staff"]);
 
@@ -10,7 +11,11 @@ export function newsPlaceholderImageUrl() {
 
 function normalizeNewsItem(item, index) {
   const cat = NEWS_CATEGORIES.has(item?.category) ? item.category : "notice";
-  const dateRaw = String(item?.date ?? "").trim().slice(0, 10);
+  // 优先用 Sanity 原始 publishedAt（与后台一致）；避免仅用 date 字段被旧数据或错误占位污染
+  const fromSanity =
+    sanityDateToYmdChina(item?.publishedAt) || sanityDateToYmdChina(item?._createdAt) || "";
+  const dateRaw =
+    fromSanity || String(item?.date ?? "").trim().slice(0, 10);
   let image = String(item?.image || "").trim();
   if (!image) image = newsPlaceholderImageUrl();
   return {

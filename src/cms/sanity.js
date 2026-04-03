@@ -65,22 +65,36 @@ function splitPortableTextToParagraphs(text) {
 
 const CN_TZ = "Asia/Shanghai";
 
-/** Sanity datetime → 中国时区日历日 YYYY-MM-DD（与后台「自然日」观感一致，避免按 UTC 截断差一天） */
-function sanityDateToYmdChina(value) {
+/**
+ * Sanity datetime → 中国时区日历日 YYYY-MM-DD。
+ * 优先用 format()（兼容部分环境 formatToParts 不完整的问题）；供 news 归一化与查询结果共用。
+ */
+export function sanityDateToYmdChina(value) {
   if (value == null || value === "") return "";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
-  const parts = new Intl.DateTimeFormat("en-CA", {
+  const opts = {
     timeZone: CN_TZ,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(d);
-  const y = parts.find((p) => p.type === "year")?.value;
-  const m = parts.find((p) => p.type === "month")?.value;
-  const day = parts.find((p) => p.type === "day")?.value;
-  if (!y || !m || !day) return "";
-  return `${y}-${m}-${day}`;
+  };
+  try {
+    const s = new Intl.DateTimeFormat("en-CA", opts).format(d).replace(/\//g, "-");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  } catch {
+    /* fall through */
+  }
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", opts).formatToParts(d);
+    const y = parts.find((p) => p.type === "year")?.value;
+    const m = parts.find((p) => p.type === "month")?.value;
+    const day = parts.find((p) => p.type === "day")?.value;
+    if (y && m && day) return `${y}-${m}-${day}`;
+  } catch {
+    /* ignore */
+  }
+  return "";
 }
 
 /** 按正文块顺序取第一张图（Sanity image 或 embedImage 外链） */
